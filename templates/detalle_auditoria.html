@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Detalle de Auditoría{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-title" style="flex:1;">
+            <div class="icon" onclick="window.history.back()" style="cursor:pointer;">⬅️</div>
+            DETALLE AUDITORÍA
+        </div>
+        <div class="header-actions">
+            <button onclick="loadDetalle()" title="Refrescar">🔄</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        <!-- Main Audit Info -->
+        <div id="auditOverview" style="margin-bottom: 20px;">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Cameras List -->
+        <h3 style="margin-bottom: 12px; color: var(--primary-color);">🏪 Registros por Cámara</h3>
+        <div id="camerasList">
+            <!-- Filled via JS -->
+        </div>
+
+        <!-- Logo footer -->
+        <div class="logo-footer" style="margin-top: 40px;">
+            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/historico" class="active">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+
+<!-- Extra hidden inputs -->
+<input type="hidden" id="auditoriaId" value="{{ auditoria_id }}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    loadDetalle();
+});
+
+async function loadDetalle() {
+    const id = document.getElementById('auditoriaId').value;
+    const overviewContainer = document.getElementById('auditOverview');
+    const listContainer = document.getElementById('camerasList');
+    
+    overviewContainer.innerHTML = '<div class="spinner"></div>';
+    listContainer.innerHTML = '';
+    
+    try {
+        const audit = await apiGet(`/api/historico/auditorias/${id}`);
+        
+        // Render Overview
+        overviewContainer.innerHTML = `
+            <div class="form-section" style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <span style="font-size:18px; font-weight:700; color:var(--text-primary);">
+                        <span class="icon">🏷️</span> ${audit.id_auditoria}
+                    </span>
+                    <span class="status-badge ${audit.estado === 'completada' ? 'completed' : 'in-progress'}">
+                        ${audit.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
+                    </span>
+                </div>
+                
+                <div style="display:flex;gap:12px;margin-bottom:15px;">
+                    <div class="stat-card" style="flex:1;">
+                        <div class="stat-value" style="font-size:20px;">${audit.camaras_auditadas}</div>
+                        <div class="stat-label">Auditadas</div>
+                    </div>
+                    <div class="stat-card" style="flex:1;">
+                        <div class="stat-value" style="font-size:20px;">${audit.total_camaras}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-bottom:8px;"><span class="field-icon">🏢</span><span class="field-value">${audit.sede_nombre || '-'}</span></div>
+                <div class="form-field" style="margin-bottom:8px;"><span class="field-icon">👤</span><span class="field-value">${audit.nombre_auditor || audit.auditor_nombre || '-'}</span></div>
+                <div class="form-field"><span class="field-icon">📅</span><span class="field-value">${formatDate(audit.fecha)}</span></div>
+            </div>
+        `;
+        
+        // Render Cameras List
+        if (audit.detalles && audit.detalles.length > 0) {
+            listContainer.innerHTML = audit.detalles.map((d, i) => {
+                let tempColor = 'var(--text-primary)';
+                if (d.temperatura !== null) {
+                    if (d.temperatura < 0) tempColor = 'var(--info)';
+                    else if (d.temperatura > 8) tempColor = 'var(--danger)';
+                    else tempColor = 'var(--ransa-green)';
+                }
+                
+                return `
+                <div class="audit-card animate-in" style="animation-delay: ${i * 0.05}s; cursor: default; margin-bottom: 15px;">
+                    <div class="audit-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">
+                        <div class="audit-id" style="font-size: 16px;">🏪 ${d.camara_nombre || 'Cámara ' + d.camara_id}</div>
+                        <span style="font-weight:700; font-size: 18px; color: ${tempColor};">
+                            ${d.temperatura !== null ? d.temperatura + '°C' : 'Sin registro'}
+                        </span>
+                    </div>
+                    
+                    <div class="audit-info" style="gap: 10px;">
+                        ${d.nombre_producto ? `<div><span class="icon">📦</span> <strong>Producto:</strong> ${d.nombre_producto}</div>` : ''}
+                        ${d.observaciones ? `<div style="color: var(--gray-500); font-style: italic;"><span class="icon">📝</span> ${d.observaciones}</div>` : ''}
+                        
+                        <div style="display:flex; justify-content: space-between; margin-top: 5px; color: var(--gray-400); font-size: 12px;">
+                            <span>👤 ${d.nombre_auditor || '-'}</span>
+                            <span>📅 ${d.fecha_registro || '-'} ${d.hora_registro || ''}</span>
+                        </div>
+                    </div>
+                    
+                    ${d.foto_url ? `
+                    <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <img src="${d.foto_url}" style="width: 100%; display: block;" alt="Evidencia">
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }).join('');
+        } else {
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-text">Aún no hay cámaras auditadas en este registro</div>
+                </div>
+            `;
+        }
+        
+    } catch (e) {
+        overviewContainer.innerHTML = `<div class="empty-state"><div class="empty-text">Error al cargar detalle: ${e.message}</div></div>`;
+        showToast('Error al cargar detalle', 'error');
+    }
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+</script>
+{% endblock %}

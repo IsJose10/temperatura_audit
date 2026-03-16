@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Auditoría de Cámaras{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-title">
+            <div class="icon">✅</div>
+            AUDITORÍA DE CÁMARAS
+        </div>
+        <div class="header-actions">
+            <button onclick="location.reload()" title="Refrescar">🔔</button>
+            <button onclick="window.location.href='/admin/usuarios'" title="Perfil">👤</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        <!-- Sede selector -->
+        <div class="sede-selector">
+            <label>SEDE</label>
+            <select id="sedeSelect" class="select-styled" onchange="onSedeChange()">
+                <option value="">Seleccionar sede...</option>
+            </select>
+            <button class="sede-add-btn" onclick="createNewAudit()" title="Nueva auditoría">➕</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row" id="statsRow">
+            <div class="stat-card">
+                <div class="stat-icon">🏢</div>
+                <div class="stat-value" id="totalCamaras">0</div>
+                <div class="stat-label">Total Cámaras</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="auditadas">0</div>
+                <div class="stat-label">Auditadas</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value" id="restantes">0</div>
+                <div class="stat-label">Restantes</div>
+            </div>
+        </div>
+
+        <!-- Audit ID -->
+        <div class="form-section">
+            <div class="section-label">
+                <span class="icon">🏷️</span> ID Auditoría
+            </div>
+            <div class="form-field">
+                <span class="field-value" id="auditId">-</span>
+                <button class="copy-btn" onclick="copyAuditId()" title="Copiar ID">📋</button>
+            </div>
+        </div>
+
+        <!-- Auditor name -->
+        <div class="form-section">
+            <div class="section-label">
+                <span class="icon">👤</span> Nombre Auditor
+            </div>
+            <div class="form-field">
+                <span class="field-icon">👤</span>
+                <span class="field-value" id="auditorName">-</span>
+            </div>
+        </div>
+
+        <!-- Camera selector -->
+        <div class="camara-selector">
+            <label>Seleccionar Cámara</label>
+            <div class="camara-select-wrapper">
+                <span class="select-icon">🏪</span>
+                <select id="camaraSelect">
+                    <option value="">Seleccionar cámara...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Detail form (shown when camera selected) -->
+        <div class="form-section" id="detailSection" style="display:none;">
+            <!-- Product name -->
+            <div class="section-label">
+                <span class="icon">📦</span> Nombre del Producto
+            </div>
+            <div class="detail-input-group">
+                <input type="text" id="productoInput" placeholder="Ej: Pollo congelado, Leche..." class="input-styled">
+            </div>
+
+            <!-- Temperature input -->
+            <div class="section-label" style="margin-top: 12px;">
+                <span class="icon">🌡️</span> Temperatura
+            </div>
+            <div class="temp-input-group">
+                <input type="number" step="0.1" id="tempInput" placeholder="0.0">
+                <span class="temp-unit">°C</span>
+            </div>
+
+            <!-- Observations -->
+            <div class="section-label" style="margin-top: 12px;">
+                <span class="icon">📝</span> Observaciones
+            </div>
+            <div class="detail-input-group">
+                <textarea id="obsInput" placeholder="Observaciones del producto..." rows="3"></textarea>
+            </div>
+
+            <!-- Photo capture -->
+            <div class="section-label" style="margin-top: 12px;">
+                <span class="icon">📸</span> Evidencia Fotográfica
+            </div>
+            <div class="photo-capture-area">
+                <!-- Camera preview (hidden until activated) -->
+                <div id="cameraContainer" style="display:none;">
+                    <video id="cameraPreview" autoplay playsinline></video>
+                    <div class="camera-controls">
+                        <button class="btn-capture" onclick="takePhoto()" title="Tomar foto">📸 Capturar</button>
+                        <button class="btn-cancel-cam" onclick="stopCamera()" title="Cancelar">✖ Cancelar</button>
+                    </div>
+                </div>
+
+                <!-- Captured photo preview -->
+                <div id="photoPreview" style="display:none;">
+                    <img id="capturedPhoto" src="" alt="Foto capturada">
+                    <div class="photo-actions">
+                        <button class="btn-retake" onclick="retakePhoto()">🔄 Retomar</button>
+                        <button class="btn-remove-photo" onclick="removePhoto()">🗑️ Eliminar</button>
+                    </div>
+                </div>
+
+                <!-- Button to open camera -->
+                <button class="btn-open-camera" id="btnOpenCamera" onclick="openCamera()">
+                    📷 Tomar Foto como Evidencia
+                </button>
+
+                <!-- Hidden canvas for capturing -->
+                <canvas id="photoCanvas" style="display:none;"></canvas>
+            </div>
+        </div>
+
+        <!-- Save button -->
+        <div class="btn-action-row">
+            <button class="btn-primary" onclick="guardarAuditoria()" id="btnGuardar">
+                📥 Guardar Auditoría
+            </button>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="logo-footer">
+            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria" class="active">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/historico">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentAudit = null;
+let sedes = [];
+let camaras = [];
+let cameraStream = null;
+let capturedPhotoData = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    loadSedes();
+    
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('auditorName').textContent = user.nombre_completo || '-';
+    
+    // Show detail section when camera selected
+    document.getElementById('camaraSelect').addEventListener('change', (e) => {
+        document.getElementById('detailSection').style.display = e.target.value ? 'block' : 'none';
+        // Reset fields
+        if (!e.target.value) {
+            resetDetailFields();
+        }
+    });
+});
+
+function resetDetailFields() {
+    document.getElementById('productoInput').value = '';
+    document.getElementById('tempInput').value = '';
+    document.getElementById('obsInput').value = '';
+    removePhoto();
+}
+
+async function loadSedes() {
+    try {
+        const data = await apiGet('/api/sedes');
+        sedes = data;
+        const select = document.getElementById('sedeSelect');
+        select.innerHTML = '<option value="">Seleccionar sede...</option>';
+        data.forEach(s => {
+            select.innerHTML += `<option value="${s.id}">${s.nombre} (${s.regional || 'N/A'})</option>`;
+        });
+    } catch (e) {
+        showToast('Error al cargar sedes', 'error');
+    }
+}
+
+async function onSedeChange() {
+    const sedeId = document.getElementById('sedeSelect').value;
+    if (!sedeId) return;
+    
+    // Load cameras
+    try {
+        const data = await apiGet(`/api/sedes/${sedeId}/camaras`);
+        camaras = data;
+        const select = document.getElementById('camaraSelect');
+        select.innerHTML = '<option value="">Seleccionar cámara...</option>';
+        data.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+        });
+        
+        document.getElementById('totalCamaras').textContent = data.length;
+    } catch (e) {
+        showToast('Error al cargar cámaras', 'error');
+    }
+    
+    // Check for active audit
+    try {
+        const audit = await apiGet(`/api/auditorias/activa?sede_id=${sedeId}`);
+        if (audit) {
+            currentAudit = audit;
+            updateAuditUI(audit);
+        } else {
+            resetAuditUI();
+        }
+    } catch (e) {
+        resetAuditUI();
+    }
+}
+
+async function createNewAudit() {
+    const sedeId = document.getElementById('sedeSelect').value;
+    if (!sedeId) {
+        showToast('Selecciona una sede primero', 'warning');
+        return;
+    }
+    
+    try {
+        showLoading(true);
+        const audit = await apiPost('/api/auditorias', { sede_id: parseInt(sedeId) });
+        currentAudit = audit;
+        updateAuditUI(audit);
+        showToast('Nueva auditoría creada', 'success');
+    } catch (e) {
+        showToast('Error al crear auditoría: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function updateAuditUI(audit) {
+    document.getElementById('auditId').textContent = audit.id_auditoria;
+    document.getElementById('auditadas').textContent = audit.camaras_auditadas;
+    document.getElementById('totalCamaras').textContent = audit.total_camaras;
+    document.getElementById('restantes').textContent = audit.total_camaras - audit.camaras_auditadas;
+    
+    // Disable already audited cameras in the select dropdown
+    const select = document.getElementById('camaraSelect');
+    
+    // First, reset all options to enabled
+    Array.from(select.options).forEach(opt => {
+        if(opt.value !== "") {
+            opt.disabled = false;
+            // Remove "(Completada)" if it exists
+            opt.text = opt.text.replace(" (Completada)", "");
+        }
+    });
+
+    // If there are detailed registers, disable those options
+    if (audit.detalles && audit.detalles.length > 0) {
+        audit.detalles.forEach(d => {
+            const optionToDisable = select.querySelector(`option[value="${d.camara_id}"]`);
+            if (optionToDisable) {
+                optionToDisable.disabled = true;
+                if (!optionToDisable.text.includes("(Completada)")) {
+                    optionToDisable.text += " (Completada)";
+                }
+            }
+        });
+    }
+}
+
+function resetAuditUI() {
+    document.getElementById('auditId').textContent = '-';
+    document.getElementById('auditadas').textContent = '0';
+    document.getElementById('restantes').textContent = '0';
+    currentAudit = null;
+    
+    // Also reset the select dropdown options completely if audit resets
+    const select = document.getElementById('camaraSelect');
+    if (select) {
+        Array.from(select.options).forEach(opt => {
+            if(opt.value !== "") {
+                opt.disabled = false;
+                opt.text = opt.text.replace(" (Completada)", "");
+            }
+        });
+    }
+}
+
+// ============================
+// Camera / Photo Functions
+// ============================
+
+async function openCamera() {
+    try {
+        const constraints = {
+            video: {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const video = document.getElementById('cameraPreview');
+        video.srcObject = cameraStream;
+        
+        document.getElementById('cameraContainer').style.display = 'block';
+        document.getElementById('btnOpenCamera').style.display = 'none';
+        document.getElementById('photoPreview').style.display = 'none';
+    } catch (err) {
+        showToast('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
+        console.error('Camera error:', err);
+    }
+}
+
+function takePhoto() {
+    const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('photoCanvas');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    
+    capturedPhotoData = canvas.toDataURL('image/jpeg', 0.8);
+    
+    document.getElementById('capturedPhoto').src = capturedPhotoData;
+    document.getElementById('photoPreview').style.display = 'block';
+    
+    stopCamera();
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+    document.getElementById('cameraContainer').style.display = 'none';
+    
+    if (!capturedPhotoData) {
+        document.getElementById('btnOpenCamera').style.display = 'block';
+    }
+}
+
+function retakePhoto() {
+    capturedPhotoData = null;
+    document.getElementById('photoPreview').style.display = 'none';
+    openCamera();
+}
+
+function removePhoto() {
+    capturedPhotoData = null;
+    document.getElementById('photoPreview').style.display = 'none';
+    document.getElementById('btnOpenCamera').style.display = 'block';
+    stopCamera();
+}
+
+// ============================
+// Save Audit
+// ============================
+
+async function guardarAuditoria() {
+    if (!currentAudit) {
+        showToast('Crea una auditoría primero con el botón +', 'warning');
+        return;
+    }
+    
+    const camaraId = document.getElementById('camaraSelect').value;
+    if (!camaraId) {
+        showToast('Selecciona una cámara', 'warning');
+        return;
+    }
+    
+    const producto = document.getElementById('productoInput').value;
+    const temp = document.getElementById('tempInput').value;
+    const obs = document.getElementById('obsInput').value;
+    
+    try {
+        showLoading(true);
+        
+        // Upload photo first if captured
+        let fotoUrl = null;
+        if (capturedPhotoData) {
+            const uploadResult = await apiPost('/api/auditorias/upload-foto', {
+                image: capturedPhotoData
+            });
+            fotoUrl = uploadResult.foto_url;
+        }
+        
+        const detalle = await apiPost(`/api/auditorias/${currentAudit.id}/detalle`, {
+            camara_id: parseInt(camaraId),
+            nombre_producto: producto || null,
+            temperatura: temp ? parseFloat(temp) : null,
+            observaciones: obs || null,
+            foto_url: fotoUrl
+        });
+        
+        // Update counters
+        currentAudit.camaras_auditadas++;
+        
+        // Add the new detail to currentAudit so it gets disabled
+        if (!currentAudit.detalles) currentAudit.detalles = [];
+        currentAudit.detalles.push(detalle);
+        
+        updateAuditUI(currentAudit);
+        
+        // Reset inputs
+        resetDetailFields();
+        document.getElementById('camaraSelect').value = '';
+        document.getElementById('detailSection').style.display = 'none';
+        
+        showToast('Registro guardado exitosamente ✅', 'success');
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function copyAuditId() {
+    const id = document.getElementById('auditId').textContent;
+    if (id && id !== '-') {
+        navigator.clipboard.writeText(id);
+        showToast('ID copiado al portapapeles', 'success');
+    }
+}
+</script>
+{% endblock %}

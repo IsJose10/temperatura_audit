@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Histórico de Auditorías{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-title">
+            <div class="icon">📚</div>
+            HISTÓRICO DE AUDITORÍAS
+        </div>
+        <div class="header-actions">
+            <button onclick="loadHistorico()" title="Refrescar">🔄</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        <!-- Filters -->
+        <div class="filter-row">
+            <select id="filterSede" onchange="loadHistorico()">
+                <option value="">Todas las sedes</option>
+            </select>
+            <select id="filterEstado" onchange="loadHistorico()">
+                <option value="">Todos</option>
+                <option value="completada">Completadas</option>
+                <option value="en_progreso">En Progreso</option>
+            </select>
+        </div>
+
+        <!-- Audit list -->
+        <div id="historicoList">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="logo-footer">
+            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/historico" class="active">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    loadSedesFilter();
+    loadHistorico();
+});
+
+async function loadSedesFilter() {
+    try {
+        const sedes = await apiGet('/api/sedes');
+        const select = document.getElementById('filterSede');
+        sedes.forEach(s => {
+            select.innerHTML += `<option value="${s.id}">${s.nombre}</option>`;
+        });
+    } catch (e) {}
+}
+
+async function loadHistorico() {
+    const container = document.getElementById('historicoList');
+    container.innerHTML = '<div class="spinner"></div>';
+    
+    const sedeId = document.getElementById('filterSede').value;
+    const estado = document.getElementById('filterEstado').value;
+    
+    let url = '/api/historico/auditorias?limit=50';
+    if (sedeId) url += `&sede_id=${sedeId}`;
+    if (estado) url += `&estado=${estado}`;
+    
+    try {
+        const auditorias = await apiGet(url);
+        
+        if (auditorias.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-text">No se encontraron auditorías</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = auditorias.map((a, i) => `
+            <div class="audit-card animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/historico/detalle/${a.id}'">
+                <div class="audit-header">
+                    <div class="audit-id">${a.id_auditoria}</div>
+                    <span class="status-badge ${a.estado === 'completada' ? 'completed' : 'in-progress'}">
+                        ${a.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
+                    </span>
+                </div>
+                <div class="audit-info">
+                    <span><span class="icon">🏢</span> ${a.sede_nombre || '-'}</span>
+                    <span><span class="icon">👤</span> ${a.auditor_nombre || '-'}</span>
+                    <span><span class="icon">📅</span> ${formatDate(a.fecha)}</span>
+                    <span><span class="icon">📊</span> ${a.camaras_auditadas}/${a.total_camaras} cámaras</span>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-text">Error al cargar histórico</div></div>`;
+        showToast('Error al cargar histórico', 'error');
+    }
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+</script>
+{% endblock %}

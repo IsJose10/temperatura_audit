@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Dashboard{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-title">
+            <div class="icon">📊</div>
+            DASHBOARD
+        </div>
+        <div class="header-actions">
+            <button onclick="loadDashboard()" title="Refrescar">🔄</button>
+        </div>
+    </div>
+
+
+    <!-- Content -->
+    <div class="content-area">
+        <!-- Stats Grid -->
+        <div class="dashboard-grid" id="dashboardStats">
+            <div class="dashboard-card">
+                <div class="card-icon">📋</div>
+                <div class="card-value" id="dTotalAuditorias">0</div>
+                <div class="card-label">Total Auditorías</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon">📅</div>
+                <div class="card-value" id="dAuditoriasHoy">0</div>
+                <div class="card-label">Auditorías Hoy</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon">✅</div>
+                <div class="card-value" id="dCompletadas">0</div>
+                <div class="card-label">Completadas</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon">⏳</div>
+                <div class="card-value" id="dEnProgreso">0</div>
+                <div class="card-label">En Progreso</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon">🏢</div>
+                <div class="card-value" id="dTotalSedes">0</div>
+                <div class="card-label">Sedes Activas</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="card-icon">🏪</div>
+                <div class="card-value" id="dTotalCamaras">0</div>
+                <div class="card-label">Total Cámaras</div>
+            </div>
+        </div>
+
+        <!-- Chart: Auditorias por Sede -->
+        <div class="chart-container">
+            <h3>📊 Auditorías por Sede</h3>
+            <div class="bar-chart" id="chartSede">
+                <div class="empty-state" style="padding:20px;">
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart: Auditorias por Mes -->
+        <div class="chart-container">
+            <h3>📈 Auditorías por Mes</h3>
+            <div class="bar-chart" id="chartMes">
+                <div class="empty-state" style="padding:20px;">
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart: Temp Promedio por Mes -->
+        <div class="chart-container">
+            <h3>🌡️ Temp Promedio por Mes</h3>
+            <div class="bar-chart" id="chartTempPromedio">
+                <div class="empty-state" style="padding:20px;">
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rango Temperaturas -->
+        <div class="chart-container" style="padding-bottom: 20px;">
+            <h3>❄️ Rango Temp por Cámara</h3>
+            <div id="tableRangoTemp"
+                style="width: 100%; border-radius:12px; overflow:hidden; border: 1px solid var(--border-color); background: white; margin-top: 15px;">
+                <div class="empty-state" style="padding:20px;">
+                    <div class="empty-text">Cargando...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="logo-footer">
+            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/historico">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard" class="active">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        requireAuth();
+        loadDashboard();
+
+        // Debug viewport width
+        const overlay = document.getElementById('debug-overlay');
+        if (overlay) {
+            const updateDebug = () => {
+                const winW = window.innerWidth;
+                const docW = document.documentElement.clientWidth;
+                const bodyW = document.body.clientWidth;
+                const appC = document.querySelector('.app-container');
+                const appW = appC ? appC.offsetWidth : 'N/A';
+                const bodymar = window.getComputedStyle(document.body).margin;
+
+                overlay.innerHTML = `W: ${winW}px | Doc: ${docW}px | Body: ${bodyW}px | App: ${appW}px | B-Marg: ${bodymar}`;
+            };
+            updateDebug();
+            window.addEventListener('resize', updateDebug);
+        }
+    });
+
+    async function loadDashboard() {
+        try {
+            const stats = await apiGet('/api/dashboard/stats');
+
+            // Update stat cards with animation
+            animateCounter('dTotalAuditorias', stats.total_auditorias);
+            animateCounter('dAuditoriasHoy', stats.auditorias_hoy);
+            animateCounter('dCompletadas', stats.auditorias_completadas);
+            animateCounter('dEnProgreso', stats.auditorias_en_progreso);
+            animateCounter('dTotalSedes', stats.total_sedes);
+            animateCounter('dTotalCamaras', stats.total_camaras);
+
+            // Build sede chart
+            buildBarChart('chartSede', stats.auditorias_por_sede, 'sede', 'total');
+
+            // Build monthly chart
+            buildBarChart('chartMes', stats.auditorias_por_mes, 'mes', 'total');
+
+            // Build average temp chart
+            buildBarChartTemp('chartTempPromedio', stats.temperatura_promedio_por_mes, 'mes', 'promedio');
+
+            // Build min/max table
+            buildMinMaxTable('tableRangoTemp', stats.rango_camaras);
+
+        } catch (e) {
+            showToast('Error al cargar dashboard: ' + e.message, 'error');
+        }
+    }
+
+    function animateCounter(elementId, targetValue) {
+        const el = document.getElementById(elementId);
+        let current = 0;
+        const step = Math.max(1, Math.ceil(targetValue / 20));
+        const interval = setInterval(() => {
+            current += step;
+            if (current >= targetValue) {
+                current = targetValue;
+                clearInterval(interval);
+            }
+            el.textContent = current;
+        }, 40);
+    }
+
+    function buildBarChart(containerId, data, labelKey, valueKey) {
+        const container = document.getElementById(containerId);
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">Sin datos disponibles</div></div>';
+            return;
+        }
+
+        const maxVal = Math.max(...data.map(d => d[valueKey]));
+
+        container.innerHTML = data.map(item => {
+            const pct = maxVal > 0 ? (item[valueKey] / maxVal * 100) : 0;
+            return `
+            <div class="bar-item animate-in">
+                <div class="bar-label">${item[labelKey]}${item.anio ? ' ' + item.anio : ''}</div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: ${pct}%">${item[valueKey]}</div>
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function buildBarChartTemp(containerId, data, labelKey, valueKey) {
+        const container = document.getElementById(containerId);
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">Sin datos disponibles</div></div>';
+            return;
+        }
+
+        // For temperature, max absolute value is useful for scale, but let's just use max
+        // Since it can be negative, finding a good scale is trickier. 
+        // Assuming mostly positive temps for fridges or slightly negative.
+        let maxVal = Math.max(...data.map(d => Math.abs(d[valueKey])));
+        // Give some headroom
+        maxVal = maxVal < 5 ? 5 : maxVal * 1.2;
+
+        container.innerHTML = data.map(item => {
+            const val = item[valueKey];
+            // simple percentage representation for visual scale
+            const pct = Math.abs(val) / maxVal * 100;
+            // if below 0 use a different color
+            const color = val < 0 ? 'var(--info)' : 'var(--ransa-green)';
+
+            return `
+            <div class="bar-item animate-in">
+                <div class="bar-label" style="min-width: 65px">${item[labelKey]} ${item.anio ? item.anio : ''}</div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width: ${pct}%; background: ${color}">${val} °C</div>
+                </div>
+            </div>
+        `;
+        }).join('');
+    }
+
+    function buildMinMaxTable(containerId, data) {
+        const container = document.getElementById(containerId);
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty-state" style="padding:20px;"><div class="empty-text">Sin datos disponibles</div></div>';
+            return;
+        }
+
+        let html = `
+        <table style="width:100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+            <thead style="background: var(--surface-variant);">
+                <tr>
+                    <th style="padding: 12px; border-bottom: 2px solid var(--border-color);">Cámara</th>
+                    <th style="padding: 12px; border-bottom: 2px solid var(--border-color);">Temp Mínima</th>
+                    <th style="padding: 12px; border-bottom: 2px solid var(--border-color);">Temp Máxima</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+        data.forEach(item => {
+            let minClass = item.min < 0 ? 'color: var(--info); font-weight: bold;' : 'color: var(--text-primary);';
+            let maxClass = item.max > 8 ? 'color: var(--danger); font-weight: bold;' : 'color: var(--text-primary);';
+
+            html += `
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;"><strong>${item.camara}</strong></td>
+                <td style="padding: 12px; ${minClass}">${item.min !== null ? item.min + ' °C' : '-'}</td>
+                <td style="padding: 12px; ${maxClass}">${item.max !== null ? item.max + ' °C' : '-'}</td>
+            </tr>
+        `;
+        });
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+    }
+</script>
+{% endblock %}

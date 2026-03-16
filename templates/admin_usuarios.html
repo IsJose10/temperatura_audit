@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Administrar Usuarios{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="app-header">
+        <div class="header-title">
+            <div class="icon">🔍</div>
+            ADMINISTRAR USUARIOS
+        </div>
+        <div class="header-actions">
+            <button onclick="openCreateModal()" title="Nuevo usuario">➕</button>
+            <button onclick="window.location.href='/auditoria'" title="Volver">👤</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+        <!-- Search bar -->
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search" oninput="searchUsuarios()">
+        </div>
+
+        <!-- User list -->
+        <div class="user-list" id="userList">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="logo-footer">
+            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/historico">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+
+<!-- Create/Edit User Modal -->
+<div class="modal-overlay" id="userModal">
+    <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 id="modalTitle">➕ Crear Usuario</h2>
+        <form id="userForm" onsubmit="saveUser(event)">
+            <input type="hidden" id="editUserId">
+            <div class="form-group">
+                <label>Nombre de Usuario</label>
+                <input type="text" id="formUsername" required placeholder="nombre.apellido">
+            </div>
+            <div class="form-group" id="passwordGroup">
+                <label>Contraseña</label>
+                <input type="password" id="formPassword" placeholder="Mínimo 6 caracteres">
+            </div>
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" id="formNombre" required placeholder="Nombre Apellido">
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <select id="formRol">
+                    <option value="auditor">Auditor</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Regional</label>
+                <input type="text" id="formRegional" placeholder="Regional asignada">
+            </div>
+
+            <!-- Status toggle (only visible when editing) -->
+            <div class="form-group" id="statusGroup" style="display:none;">
+                <label>Estado del Usuario</label>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="formActivo" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span id="statusLabel" style="font-size:14px;font-weight:600;color:var(--ransa-green);">✅ Activo</span>
+                </div>
+                <small style="color:var(--gray-500);margin-top:4px;display:block;">
+                    Deshabilitar un usuario impide su acceso al sistema
+                </small>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" onclick="closeModal('userModal')">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #e53935;
+    transition: 0.3s;
+    border-radius: 28px;
+}
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--ransa-green, #009B3A);
+}
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+/* Inactive user card styling */
+.user-card.inactive {
+    opacity: 0.5;
+    border-left: 3px solid #e53935;
+}
+</style>
+
+<script>
+let allUsers = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    loadUsuarios();
+
+    // Toggle status label
+    document.getElementById('formActivo').addEventListener('change', function() {
+        const label = document.getElementById('statusLabel');
+        if (this.checked) {
+            label.textContent = '✅ Activo';
+            label.style.color = 'var(--ransa-green, #009B3A)';
+        } else {
+            label.textContent = '⛔ Deshabilitado';
+            label.style.color = '#e53935';
+        }
+    });
+});
+
+async function loadUsuarios() {
+    try {
+        const users = await apiGet('/api/usuarios/');
+        allUsers = users;
+        renderUsers(users);
+    } catch (e) {
+        document.getElementById('userList').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⚠️</div>
+                <div class="empty-text">Error al cargar usuarios. Verifica que tienes permisos de administrador.</div>
+            </div>
+        `;
+    }
+}
+
+function renderUsers(users) {
+    const container = document.getElementById('userList');
+    
+    if (users.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <div class="empty-text">No se encontraron usuarios</div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = users.map((u, i) => `
+        <div class="user-card animate-in ${u.activo ? '' : 'inactive'}" style="animation-delay: ${i * 0.05}s" onclick="editUser(${u.id})">
+            <div class="user-avatar">👤</div>
+            <div class="user-info">
+                <div class="user-name">${u.nombre_completo}</div>
+                <div class="user-role">${u.username} · ${capitalize(u.rol)}${u.regional ? ' · ' + u.regional : ''}</div>
+            </div>
+            <span class="user-status" title="${u.activo ? 'Activo' : 'Deshabilitado'}">${u.activo ? '✅' : '⛔'}</span>
+            <span class="user-arrow">›</span>
+        </div>
+    `).join('');
+}
+
+function searchUsuarios() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const filtered = allUsers.filter(u =>
+        u.username.toLowerCase().includes(q) ||
+        u.nombre_completo.toLowerCase().includes(q) ||
+        u.rol.toLowerCase().includes(q)
+    );
+    renderUsers(filtered);
+}
+
+function openCreateModal() {
+    document.getElementById('modalTitle').textContent = '➕ Crear Usuario';
+    document.getElementById('editUserId').value = '';
+    document.getElementById('formUsername').value = '';
+    document.getElementById('formPassword').value = '';
+    document.getElementById('formNombre').value = '';
+    document.getElementById('formRol').value = 'auditor';
+    document.getElementById('formRegional').value = '';
+    document.getElementById('passwordGroup').style.display = 'block';
+    document.getElementById('statusGroup').style.display = 'none';
+    document.getElementById('formUsername').disabled = false;
+    openModal('userModal');
+}
+
+async function editUser(userId) {
+    try {
+        const user = await apiGet(`/api/usuarios/${userId}`);
+        document.getElementById('modalTitle').textContent = '✏️ Editar Usuario';
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('formUsername').value = user.username;
+        document.getElementById('formPassword').value = '';
+        document.getElementById('formNombre').value = user.nombre_completo;
+        document.getElementById('formRol').value = user.rol;
+        document.getElementById('formRegional').value = user.regional || '';
+        document.getElementById('passwordGroup').style.display = 'none';
+        document.getElementById('formUsername').disabled = true;
+
+        // Show status toggle and set its value
+        document.getElementById('statusGroup').style.display = 'block';
+        document.getElementById('formActivo').checked = user.activo;
+        const label = document.getElementById('statusLabel');
+        if (user.activo) {
+            label.textContent = '✅ Activo';
+            label.style.color = 'var(--ransa-green, #009B3A)';
+        } else {
+            label.textContent = '⛔ Deshabilitado';
+            label.style.color = '#e53935';
+        }
+
+        openModal('userModal');
+    } catch (e) {
+        showToast('Error al cargar usuario', 'error');
+    }
+}
+
+async function saveUser(e) {
+    e.preventDefault();
+    const editId = document.getElementById('editUserId').value;
+    
+    try {
+        showLoading(true);
+        if (editId) {
+            // Update
+            await apiPut(`/api/usuarios/${editId}`, {
+                nombre_completo: document.getElementById('formNombre').value,
+                rol: document.getElementById('formRol').value,
+                regional: document.getElementById('formRegional').value || null,
+                activo: document.getElementById('formActivo').checked
+            });
+            showToast('Usuario actualizado exitosamente', 'success');
+        } else {
+            // Create
+            const password = document.getElementById('formPassword').value;
+            if (!password || password.length < 6) {
+                showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+                showLoading(false);
+                return;
+            }
+            await apiPost('/api/usuarios/', {
+                username: document.getElementById('formUsername').value,
+                password: password,
+                nombre_completo: document.getElementById('formNombre').value,
+                rol: document.getElementById('formRol').value,
+                regional: document.getElementById('formRegional').value || null
+            });
+            showToast('Usuario creado exitosamente', 'success');
+        }
+        
+        closeModal('userModal');
+        loadUsuarios();
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+</script>
+{% endblock %}
