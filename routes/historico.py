@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -85,7 +85,6 @@ def get_auditoria_detail(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    from fastapi import HTTPException
     
     a = db.query(Auditoria).filter(Auditoria.id == id).first()
     if not a:

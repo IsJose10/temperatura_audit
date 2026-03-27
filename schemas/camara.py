@@ -1,6 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+from typing import Optional
 
 
 class SedeResponse(BaseModel):

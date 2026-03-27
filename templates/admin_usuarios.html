@@ -4,33 +4,40 @@
 {% block body %}
 <div class="app-container">
     <!-- Header -->
-    <div class="app-header">
-        <div class="header-title">
-            <div class="icon">🔍</div>
-            ADMINISTRAR USUARIOS
+    <div
+        class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg">👥</div>
+            <span class="font-bold text-base tracking-wide">USUARIOS</span>
         </div>
-        <div class="header-actions">
-            <button onclick="openCreateModal()" title="Nuevo usuario">➕</button>
-            <button onclick="window.location.href='/auditoria'" title="Volver">👤</button>
+        <div class="flex gap-2">
+            <button onclick="openCreateModal()"
+                class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200"
+                title="Nuevo usuario">➕</button>
+            <button onclick="window.location.href='/auditoria'"
+                class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200"
+                title="Volver">⬅️</button>
         </div>
     </div>
 
     <!-- Content -->
-    <div class="content-area">
+    <div class="px-5 py-5 pb-24 space-y-4">
         <!-- Search bar -->
-        <div class="search-bar">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Search" oninput="searchUsuarios()">
+        <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar usuario..."
+                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all"
+                oninput="searchUsuarios()">
         </div>
 
         <!-- User list -->
-        <div class="user-list" id="userList">
+        <div id="userList" class="space-y-3">
             <div class="spinner"></div>
         </div>
 
         <!-- Logo footer -->
-        <div class="logo-footer">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        <div class="text-center py-6">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
         </div>
     </div>
 
@@ -59,51 +66,63 @@
 <div class="modal-overlay" id="userModal">
     <div class="modal-content">
         <div class="modal-handle"></div>
-        <h2 id="modalTitle">➕ Crear Usuario</h2>
-        <form id="userForm" onsubmit="saveUser(event)">
+        <h2 class="text-lg font-bold text-gray-900 mb-5" id="modalTitle">➕ Crear Usuario</h2>
+        <form id="userForm" onsubmit="saveUser(event)" class="space-y-4">
             <input type="hidden" id="editUserId">
-            <div class="form-group">
-                <label>Nombre de Usuario</label>
-                <input type="text" id="formUsername" required placeholder="nombre.apellido">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nombre de
+                    Usuario</label>
+                <input type="text" id="formUsername" required placeholder="nombre.apellido"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
             </div>
-            <div class="form-group" id="passwordGroup">
-                <label>Contraseña</label>
-                <input type="password" id="formPassword" placeholder="Mínimo 6 caracteres">
+            <div id="passwordGroup">
+                <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Contraseña</label>
+                <input type="password" id="formPassword" placeholder="Mínimo 6 caracteres"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
             </div>
-            <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" id="formNombre" required placeholder="Nombre Apellido">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Nombre
+                    Completo</label>
+                <input type="text" id="formNombre" required placeholder="Nombre Apellido"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
             </div>
-            <div class="form-group">
-                <label>Rol</label>
-                <select id="formRol">
+            <div>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Rol</label>
+                <select id="formRol"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
                     <option value="auditor">Auditor</option>
                     <option value="administrador">Administrador</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Regional</label>
-                <input type="text" id="formRegional" placeholder="Regional asignada">
+            <div>
+                <label
+                    class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Regional</label>
+                <input type="text" id="formRegional" placeholder="Regional asignada"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
             </div>
 
-            <!-- Status toggle (only visible when editing) -->
-            <div class="form-group" id="statusGroup" style="display:none;">
-                <label>Estado del Usuario</label>
-                <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+            <!-- Status toggle -->
+            <div id="statusGroup" style="display:none;" class="bg-gray-50 rounded-xl p-4">
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Estado del
+                    Usuario</label>
+                <div class="flex items-center gap-3">
                     <label class="toggle-switch">
                         <input type="checkbox" id="formActivo" checked>
                         <span class="toggle-slider"></span>
                     </label>
-                    <span id="statusLabel" style="font-size:14px;font-weight:600;color:var(--ransa-green);">✅ Activo</span>
+                    <span id="statusLabel" class="text-sm font-semibold text-ransa-700">✅ Activo</span>
                 </div>
-                <small style="color:var(--gray-500);margin-top:4px;display:block;">
-                    Deshabilitar un usuario impide su acceso al sistema
-                </small>
+                <small class="text-gray-400 text-xs mt-2 block">Deshabilitar un usuario impide su acceso al
+                    sistema</small>
             </div>
 
-            <div class="modal-actions">
-                <button type="button" class="btn-secondary" onclick="closeModal('userModal')">Cancelar</button>
-                <button type="submit" class="btn-primary">💾 Guardar</button>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closeModal('userModal')"
+                    class="flex-1 py-3 bg-white text-ransa-700 border-2 border-ransa-600 rounded-xl text-sm font-bold hover:bg-ransa-50 transition-all">Cancelar</button>
+                <button type="submit"
+                    class="flex-1 py-3 bg-gradient-to-r from-ransa-700 to-ransa-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-ransa-700/25 hover:shadow-xl transition-all">💾
+                    Guardar</button>
             </div>
         </form>
     </div>
@@ -112,213 +131,210 @@
 
 {% block extra_scripts %}
 <style>
-/* Toggle Switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 52px;
-    height: 28px;
-    flex-shrink: 0;
-}
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #e53935;
-    transition: 0.3s;
-    border-radius: 28px;
-}
-.toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 22px;
-    width: 22px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-}
-.toggle-switch input:checked + .toggle-slider {
-    background-color: var(--ransa-green, #009B3A);
-}
-.toggle-switch input:checked + .toggle-slider:before {
-    transform: translateX(24px);
-}
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+    }
 
-/* Inactive user card styling */
-.user-card.inactive {
-    opacity: 0.5;
-    border-left: 3px solid #e53935;
-}
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e53935;
+        transition: 0.3s;
+        border-radius: 28px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .toggle-switch input:checked+.toggle-slider {
+        background-color: #009B3A;
+    }
+
+    .toggle-switch input:checked+.toggle-slider:before {
+        transform: translateX(24px);
+    }
 </style>
 
 <script>
-let allUsers = [];
+    let allUsers = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    requireAuth();
-    loadUsuarios();
+    document.addEventListener('DOMContentLoaded', () => {
+        requireAuth();
+        loadUsuarios();
 
-    // Toggle status label
-    document.getElementById('formActivo').addEventListener('change', function() {
-        const label = document.getElementById('statusLabel');
-        if (this.checked) {
-            label.textContent = '✅ Activo';
-            label.style.color = 'var(--ransa-green, #009B3A)';
-        } else {
-            label.textContent = '⛔ Deshabilitado';
-            label.style.color = '#e53935';
-        }
+        document.getElementById('formActivo').addEventListener('change', function () {
+            const label = document.getElementById('statusLabel');
+            if (this.checked) {
+                label.textContent = '✅ Activo';
+                label.className = 'text-sm font-semibold text-ransa-700';
+            } else {
+                label.textContent = '⛔ Deshabilitado';
+                label.className = 'text-sm font-semibold text-red-600';
+            }
+        });
     });
-});
 
-async function loadUsuarios() {
-    try {
-        const users = await apiGet('/api/usuarios/');
-        allUsers = users;
-        renderUsers(users);
-    } catch (e) {
-        document.getElementById('userList').innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">⚠️</div>
-                <div class="empty-text">Error al cargar usuarios. Verifica que tienes permisos de administrador.</div>
+    async function loadUsuarios() {
+        try {
+            const users = await apiGet('/api/usuarios/');
+            allUsers = users;
+            renderUsers(users);
+        } catch (e) {
+            document.getElementById('userList').innerHTML = `
+            <div class="text-center py-16 text-gray-400">
+                <div class="text-5xl mb-3 opacity-50">⚠️</div>
+                <div class="text-sm font-medium">Error al cargar usuarios. Verifica permisos.</div>
             </div>
         `;
+        }
     }
-}
 
-function renderUsers(users) {
-    const container = document.getElementById('userList');
-    
-    if (users.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">👥</div>
-                <div class="empty-text">No se encontraron usuarios</div>
+    function renderUsers(users) {
+        const container = document.getElementById('userList');
+
+        if (users.length === 0) {
+            container.innerHTML = `
+            <div class="text-center py-16 text-gray-400">
+                <div class="text-5xl mb-3 opacity-50">👥</div>
+                <div class="text-sm font-medium">No se encontraron usuarios</div>
             </div>
         `;
-        return;
-    }
-    
-    container.innerHTML = users.map((u, i) => `
-        <div class="user-card animate-in ${u.activo ? '' : 'inactive'}" style="animation-delay: ${i * 0.05}s" onclick="editUser(${u.id})">
-            <div class="user-avatar">👤</div>
-            <div class="user-info">
-                <div class="user-name">${u.nombre_completo}</div>
-                <div class="user-role">${u.username} · ${capitalize(u.rol)}${u.regional ? ' · ' + u.regional : ''}</div>
+            return;
+        }
+
+        container.innerHTML = users.map((u, i) => `
+        <div class="bg-white rounded-2xl p-4 flex items-center gap-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300 cursor-pointer animate-in ${u.activo ? '' : 'opacity-50 !border-l-4 !border-l-red-500'}" style="animation-delay: ${i * 0.05}s" onclick="editUser(${u.id})">
+            <div class="w-11 h-11 bg-ransa-50 rounded-full flex items-center justify-center text-xl text-ransa-700 shrink-0">👤</div>
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-sm text-gray-900 truncate">${u.nombre_completo}</div>
+                <div class="text-xs text-gray-400 mt-0.5 truncate">${u.username} · ${capitalize(u.rol)}${u.regional ? ' · ' + u.regional : ''}</div>
             </div>
-            <span class="user-status" title="${u.activo ? 'Activo' : 'Deshabilitado'}">${u.activo ? '✅' : '⛔'}</span>
-            <span class="user-arrow">›</span>
+            <span class="text-lg" title="${u.activo ? 'Activo' : 'Deshabilitado'}">${u.activo ? '✅' : '⛔'}</span>
+            <span class="text-gray-300 text-lg">›</span>
         </div>
     `).join('');
-}
+    }
 
-function searchUsuarios() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allUsers.filter(u =>
-        u.username.toLowerCase().includes(q) ||
-        u.nombre_completo.toLowerCase().includes(q) ||
-        u.rol.toLowerCase().includes(q)
-    );
-    renderUsers(filtered);
-}
+    function searchUsuarios() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allUsers.filter(u =>
+            u.username.toLowerCase().includes(q) ||
+            u.nombre_completo.toLowerCase().includes(q) ||
+            u.rol.toLowerCase().includes(q)
+        );
+        renderUsers(filtered);
+    }
 
-function openCreateModal() {
-    document.getElementById('modalTitle').textContent = '➕ Crear Usuario';
-    document.getElementById('editUserId').value = '';
-    document.getElementById('formUsername').value = '';
-    document.getElementById('formPassword').value = '';
-    document.getElementById('formNombre').value = '';
-    document.getElementById('formRol').value = 'auditor';
-    document.getElementById('formRegional').value = '';
-    document.getElementById('passwordGroup').style.display = 'block';
-    document.getElementById('statusGroup').style.display = 'none';
-    document.getElementById('formUsername').disabled = false;
-    openModal('userModal');
-}
-
-async function editUser(userId) {
-    try {
-        const user = await apiGet(`/api/usuarios/${userId}`);
-        document.getElementById('modalTitle').textContent = '✏️ Editar Usuario';
-        document.getElementById('editUserId').value = user.id;
-        document.getElementById('formUsername').value = user.username;
+    function openCreateModal() {
+        document.getElementById('modalTitle').textContent = '➕ Crear Usuario';
+        document.getElementById('editUserId').value = '';
+        document.getElementById('formUsername').value = '';
         document.getElementById('formPassword').value = '';
-        document.getElementById('formNombre').value = user.nombre_completo;
-        document.getElementById('formRol').value = user.rol;
-        document.getElementById('formRegional').value = user.regional || '';
-        document.getElementById('passwordGroup').style.display = 'none';
-        document.getElementById('formUsername').disabled = true;
-
-        // Show status toggle and set its value
-        document.getElementById('statusGroup').style.display = 'block';
-        document.getElementById('formActivo').checked = user.activo;
-        const label = document.getElementById('statusLabel');
-        if (user.activo) {
-            label.textContent = '✅ Activo';
-            label.style.color = 'var(--ransa-green, #009B3A)';
-        } else {
-            label.textContent = '⛔ Deshabilitado';
-            label.style.color = '#e53935';
-        }
-
+        document.getElementById('formNombre').value = '';
+        document.getElementById('formRol').value = 'auditor';
+        document.getElementById('formRegional').value = '';
+        document.getElementById('passwordGroup').style.display = 'block';
+        document.getElementById('statusGroup').style.display = 'none';
+        document.getElementById('formUsername').disabled = false;
         openModal('userModal');
-    } catch (e) {
-        showToast('Error al cargar usuario', 'error');
     }
-}
 
-async function saveUser(e) {
-    e.preventDefault();
-    const editId = document.getElementById('editUserId').value;
-    
-    try {
-        showLoading(true);
-        if (editId) {
-            // Update
-            await apiPut(`/api/usuarios/${editId}`, {
-                nombre_completo: document.getElementById('formNombre').value,
-                rol: document.getElementById('formRol').value,
-                regional: document.getElementById('formRegional').value || null,
-                activo: document.getElementById('formActivo').checked
-            });
-            showToast('Usuario actualizado exitosamente', 'success');
-        } else {
-            // Create
-            const password = document.getElementById('formPassword').value;
-            if (!password || password.length < 6) {
-                showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
-                showLoading(false);
-                return;
+    async function editUser(userId) {
+        try {
+            const user = await apiGet(`/api/usuarios/${userId}`);
+            document.getElementById('modalTitle').textContent = '✏️ Editar Usuario';
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('formUsername').value = user.username;
+            document.getElementById('formPassword').value = '';
+            document.getElementById('formNombre').value = user.nombre_completo;
+            document.getElementById('formRol').value = user.rol;
+            document.getElementById('formRegional').value = user.regional || '';
+            document.getElementById('passwordGroup').style.display = 'none';
+            document.getElementById('formUsername').disabled = true;
+
+            document.getElementById('statusGroup').style.display = 'block';
+            document.getElementById('formActivo').checked = user.activo;
+            const label = document.getElementById('statusLabel');
+            if (user.activo) {
+                label.textContent = '✅ Activo';
+                label.className = 'text-sm font-semibold text-ransa-700';
+            } else {
+                label.textContent = '⛔ Deshabilitado';
+                label.className = 'text-sm font-semibold text-red-600';
             }
-            await apiPost('/api/usuarios/', {
-                username: document.getElementById('formUsername').value,
-                password: password,
-                nombre_completo: document.getElementById('formNombre').value,
-                rol: document.getElementById('formRol').value,
-                regional: document.getElementById('formRegional').value || null
-            });
-            showToast('Usuario creado exitosamente', 'success');
-        }
-        
-        closeModal('userModal');
-        loadUsuarios();
-    } catch (e) {
-        showToast('Error: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
-}
 
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+            openModal('userModal');
+        } catch (e) {
+            showToast('Error al cargar usuario', 'error');
+        }
+    }
+
+    async function saveUser(e) {
+        e.preventDefault();
+        const editId = document.getElementById('editUserId').value;
+
+        try {
+            showLoading(true);
+            if (editId) {
+                await apiPut(`/api/usuarios/${editId}`, {
+                    nombre_completo: document.getElementById('formNombre').value,
+                    rol: document.getElementById('formRol').value,
+                    regional: document.getElementById('formRegional').value || null,
+                    activo: document.getElementById('formActivo').checked
+                });
+                showToast('Usuario actualizado exitosamente', 'success');
+            } else {
+                const password = document.getElementById('formPassword').value;
+                if (!password || password.length < 6) {
+                    showToast('La contraseña debe tener al menos 6 caracteres', 'warning');
+                    showLoading(false);
+                    return;
+                }
+                await apiPost('/api/usuarios/', {
+                    username: document.getElementById('formUsername').value,
+                    password: password,
+                    nombre_completo: document.getElementById('formNombre').value,
+                    rol: document.getElementById('formRol').value,
+                    regional: document.getElementById('formRegional').value || null
+                });
+                showToast('Usuario creado exitosamente', 'success');
+            }
+
+            closeModal('userModal');
+            loadUsuarios();
+        } catch (e) {
+            showToast('Error: ' + e.message, 'error');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
 </script>
 {% endblock %}

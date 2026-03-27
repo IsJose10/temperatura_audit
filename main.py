@@ -10,7 +10,7 @@ from models.usuario import Usuario
 from models.sede import Sede
 from models.camara import Camara
 from models.auditoria import Auditoria, AuditoriaDetalle
-from routes import auth, auditoria, historico, dashboard, usuarios
+from routes import auth, auditoria, historico, dashboard, usuarios, pdf_report
 
 # Create uploads directory
 os.makedirs(os.path.join("static", "uploads"), exist_ok=True)
@@ -30,6 +30,7 @@ app.include_router(auditoria.router)
 app.include_router(historico.router)
 app.include_router(dashboard.router)
 app.include_router(usuarios.router)
+app.include_router(pdf_report.router)
 
 
 def seed_data():
@@ -75,10 +76,10 @@ def seed_data():
         # Create sedes
         sedes_data = [
             ("Galapa", "GAL", "Costa"),
-            ("Medellín", "MED", "Antioquia"),
-            ("Bogotá", "BOG", "Centro"),
-            ("Barranquilla", "BAQ", "Costa"),
             ("Cali", "CAL", "Pacífico"),
+            ("Fontibón", "FON", "Centro"),
+            ("Pereira", "PER", "Eje Cafetero"),
+            ("Funza", "FNZ", "Centro"),
         ]
         sedes = []
         for nombre, codigo, regional in sedes_data:
@@ -89,17 +90,65 @@ def seed_data():
         db.flush()
 
         # Cámaras específicas por sede
-        camaras_galapa = [
-            ("Pasillo 403", "Refrigerada"),
-            ("Pasillo 402", "Refrigerada"),
-            ("Pasillo 401", "Refrigerada"),
-            ("Pasillo 301", "Refrigerada"),
-            ("Pasillo 201", "Refrigerada"),
-            ("Pasillo 101", "Refrigerada"),
-            ("Precava Refrigerado", "Refrigerada"),
-            ("Precava Congelado", "Congelada"),
-            ("Bahía", "Refrigerada"),
-        ]
+        camaras_por_sede = {
+            "GAL": [
+                ("Pasillo 403", "Refrigerada"),
+                ("Pasillo 402", "Refrigerada"),
+                ("Pasillo 401", "Refrigerada"),
+                ("Pasillo 301", "Refrigerada"),
+                ("Pasillo 201", "Refrigerada"),
+                ("Pasillo 101", "Refrigerada"),
+                ("Precava Refrigerado", "Refrigerada"),
+                ("Precava Congelado", "Congelada"),
+                ("Bahía", "Refrigerada"),
+            ],
+            "FON": [
+                ("1", "Congelada"),
+                ("2", "Congelada"),
+                ("3", "Congelada"),
+                ("5", "Congelada"),
+                ("7", "Congelada"),
+                ("10", "Congelada"),
+                ("11", "Congelada"),
+                ("15", "Congelada"),
+                ("16", "Congelada"),
+                ("17", "Congelada"),
+                ("A01", "Refrigerada"),
+                ("Devoluciones", "Refrigerada"),
+                ("Prec. A01", "Refrigerada"),
+                ("Bahía A01", "Refrigerada"),
+                ("Pre Cong. 10 y 11", "Congelada"),
+                ("Pre Refrig.", "Refrigerada"),
+                ("Pre Cong.1", "Congelada"),
+                ("Bahía OPL", "Refrigerada"),
+            ],
+            "PER": [
+                ("Contenedor #1", "Congelada"),
+                ("Contenedor #2", "Congelada"),
+                ("Contenedor #3", "Congelada"),
+                ("Contenedor #4", "Congelada"),
+                ("Cava Refrigerado", "Refrigerada"),
+            ],
+            "FNZ": [
+                ("Precámara de refrigeración", "Refrigerada"),
+                ("Cámara de refrigeración", "Refrigerada"),
+                ("Pre-cámara de congelación", "Congelada"),
+                ("Cámara de congelación 1 (RICH'S)", "Congelada"),
+                ("Cámara de congelación 2 (ANTILLANA)", "Congelada"),
+                ("Túnel de Congelación #1", "Congelada"),
+                ("Túnel de Congelación #2 (RICH'S)", "Congelada"),
+            ],
+            "CAL": [
+                ("Precámara de fruver", "Refrigerada"),
+                ("Cámara de fruver 1", "Refrigerada"),
+                ("Cámara de refrigerado 1", "Refrigerada"),
+                ("Cámara de refrigerado 2", "Refrigerada"),
+                ("Precámara de refrigerado", "Refrigerada"),
+                ("Cámara de congelado 1", "Congelada"),
+                ("Cámara de congelado 2", "Congelada"),
+                ("Cámara de congelado 3", "Congelada"),
+            ],
+        }
 
         camaras_default = [
             ("Bahia", "Refrigerada"),
@@ -113,7 +162,7 @@ def seed_data():
         ]
 
         for sede in sedes:
-            camaras_lista = camaras_galapa if sede.codigo == "GAL" else camaras_default
+            camaras_lista = camaras_por_sede.get(sede.codigo, camaras_default)
             for nombre, tipo in camaras_lista:
                 camara = Camara(nombre=nombre, sede_id=sede.id, tipo=tipo)
                 db.add(camara)
@@ -122,8 +171,8 @@ def seed_data():
         print("[OK] Datos semilla insertados exitosamente.")
         print("   Usuarios creados:")
         print("      - admin / admin123 (Administrador)")
-        print("      - jose.toscano / auditor123 (Auditor)")
-        print("      - juan.perez / auditor123 (Auditor)")
+        print("      - jtoscanom / auditor123 (Auditor)")
+        print("      - jperezs / auditor123 (Auditor)")
     except Exception as e:
         db.rollback()
         print(f"[WARN] Error al insertar datos semilla: {e}")

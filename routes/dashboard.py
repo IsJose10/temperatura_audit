@@ -1,21 +1,24 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract, cast, Date
 from datetime import datetime, timedelta
 
 from database import get_db
-from models.auditoria import Auditoria
+from models.auditoria import Auditoria, AuditoriaDetalle
 from models.sede import Sede
 from models.camara import Camara
 from models.usuario import Usuario
-from models.auditoria import AuditoriaDetalle
 from routes.auth import get_current_user
 
 router = APIRouter(prefix="/api/dashboard", tags=["Dashboard"])
 
 
 @router.get("/stats")
-def get_dashboard_stats(db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
+def get_dashboard_stats(
+    sede_id: int | None = Query(None),
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
     today = datetime.now().date()
 
     total_auditorias = db.query(Auditoria).count()
@@ -51,14 +54,17 @@ def get_dashboard_stats(db: Session = Depends(get_db), current_user: Usuario = D
 
     meses_nombres = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-    # Rango de Temperaturas (min/max) por cámara
-    rango_camaras = db.query(
+    rango_query = db.query(
         Camara.nombre.label("camara"),
         func.min(AuditoriaDetalle.temperatura).label("temp_min"),
         func.max(AuditoriaDetalle.temperatura).label("temp_max")
     ).join(AuditoriaDetalle, Camara.id == AuditoriaDetalle.camara_id)\
-     .filter(AuditoriaDetalle.temperatura.isnot(None))\
-     .group_by(Camara.nombre).all()
+     .filter(AuditoriaDetalle.temperatura.isnot(None))
+
+    if sede_id:
+        rango_query = rango_query.filter(Camara.sede_id == sede_id)
+
+    rango_camaras = rango_query.group_by(Camara.nombre).all()
      
     # Temperatura promedio por mes
     temp_promedio_por_mes = db.query(

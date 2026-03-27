@@ -27,6 +27,8 @@ class AuditoriaDetalleResponse(BaseModel):
     fecha_registro: Optional[date] = None
     hora_registro: Optional[time] = None
     registrado_at: Optional[datetime] = None
+    cumple_rango: Optional[bool] = None
+    rango_esperado: Optional[str] = None
 
     class Config:
         from_attributes = True

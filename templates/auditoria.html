@@ -4,150 +4,159 @@
 {% block body %}
 <div class="app-container">
     <!-- Header -->
-    <div class="app-header">
-        <div class="header-title">
-            <div class="icon">✅</div>
-            AUDITORÍA DE CÁMARAS
+    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg">✅</div>
+            <span class="font-bold text-base tracking-wide">AUDITORÍA DE CÁMARAS</span>
         </div>
-        <div class="header-actions">
-            <button onclick="location.reload()" title="Refrescar">🔔</button>
-            <button onclick="window.location.href='/admin/usuarios'" title="Perfil">👤</button>
+        <div class="flex gap-2">
+            <button onclick="location.reload()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Refrescar">🔔</button>
+            <button onclick="window.location.href='/admin/usuarios'" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Perfil">👤</button>
         </div>
     </div>
 
     <!-- Content -->
-    <div class="content-area">
+    <div class="px-5 py-5 pb-24 space-y-5">
         <!-- Sede selector -->
-        <div class="sede-selector">
-            <label>SEDE</label>
-            <select id="sedeSelect" class="select-styled" onchange="onSedeChange()">
+        <div class="flex items-center gap-3">
+            <label class="font-bold text-xs text-gray-500 uppercase tracking-wider shrink-0">SEDE</label>
+            <select id="sedeSelect" onchange="onSedeChange()"
+                    class="flex-1 px-4 py-2.5 border-2 border-ransa-600 rounded-xl text-sm font-medium bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all appearance-none cursor-pointer">
                 <option value="">Seleccionar sede...</option>
             </select>
-            <button class="sede-add-btn" onclick="createNewAudit()" title="Nueva auditoría">➕</button>
+            <button onclick="createNewAudit()" 
+                    class="w-11 h-11 bg-gradient-to-br from-ransa-600 to-ransa-700 text-white rounded-xl text-xl flex items-center justify-center hover:shadow-lg hover:shadow-ransa-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0" 
+                    title="Nueva auditoría">➕</button>
         </div>
 
         <!-- Stats -->
-        <div class="stats-row" id="statsRow">
-            <div class="stat-card">
-                <div class="stat-icon">🏢</div>
-                <div class="stat-value" id="totalCamaras">0</div>
-                <div class="stat-label">Total Cámaras</div>
+        <div class="grid grid-cols-3 gap-3" id="statsRow">
+            <div class="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
+                <div class="text-ransa-600 text-lg mb-1">🏢</div>
+                <div class="text-2xl font-extrabold text-ransa-700" id="totalCamaras">0</div>
+                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Total</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">📋</div>
-                <div class="stat-value" id="auditadas">0</div>
-                <div class="stat-label">Auditadas</div>
+            <div class="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
+                <div class="text-ransa-600 text-lg mb-1">📋</div>
+                <div class="text-2xl font-extrabold text-ransa-700" id="auditadas">0</div>
+                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Auditadas</div>
             </div>
-            <div class="stat-card danger">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-value" id="restantes">0</div>
-                <div class="stat-label">Restantes</div>
+            <div class="bg-white rounded-2xl p-4 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-red-200 transition-all duration-300">
+                <div class="text-red-500 text-lg mb-1">⏳</div>
+                <div class="text-2xl font-extrabold text-red-500" id="restantes">0</div>
+                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Restantes</div>
             </div>
         </div>
 
         <!-- Audit ID -->
-        <div class="form-section">
-            <div class="section-label">
-                <span class="icon">🏷️</span> ID Auditoría
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                <span>🏷️</span> ID Auditoría
             </div>
-            <div class="form-field">
-                <span class="field-value" id="auditId">-</span>
-                <button class="copy-btn" onclick="copyAuditId()" title="Copiar ID">📋</button>
+            <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
+                <span class="flex-1 font-semibold text-gray-800" id="auditId">-</span>
+                <button onclick="copyAuditId()" class="text-gray-300 hover:text-ransa-600 transition-colors" title="Copiar ID">📋</button>
             </div>
         </div>
 
         <!-- Auditor name -->
-        <div class="form-section">
-            <div class="section-label">
-                <span class="icon">👤</span> Nombre Auditor
+        <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                <span>👤</span> Nombre Auditor
             </div>
-            <div class="form-field">
-                <span class="field-icon">👤</span>
-                <span class="field-value" id="auditorName">-</span>
+            <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
+                <span class="text-gray-400">👤</span>
+                <span class="flex-1 font-medium text-gray-800" id="auditorName">-</span>
             </div>
         </div>
 
         <!-- Camera selector -->
-        <div class="camara-selector">
-            <label>Seleccionar Cámara</label>
-            <div class="camara-select-wrapper">
-                <span class="select-icon">🏪</span>
-                <select id="camaraSelect">
+        <div>
+            <label class="block font-semibold text-sm text-gray-600 mb-2">Seleccionar Cámara</label>
+            <div class="relative">
+                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-ransa-600">🏪</span>
+                <select id="camaraSelect"
+                        class="w-full pl-10 pr-4 py-3 border-2 border-ransa-600 rounded-xl text-sm font-medium bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all appearance-none cursor-pointer">
                     <option value="">Seleccionar cámara...</option>
                 </select>
             </div>
         </div>
 
-        <!-- Detail form (shown when camera selected) -->
-        <div class="form-section" id="detailSection" style="display:none;">
+        <!-- Detail form -->
+        <div id="detailSection" style="display:none;" class="space-y-4 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <!-- Product name -->
-            <div class="section-label">
-                <span class="icon">📦</span> Nombre del Producto
-            </div>
-            <div class="detail-input-group">
-                <input type="text" id="productoInput" placeholder="Ej: Pollo congelado, Leche..." class="input-styled">
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <span>📦</span> Nombre del Producto
+                </div>
+                <input type="text" id="productoInput" placeholder="Ej: Pollo congelado, Leche..."
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
             </div>
 
-            <!-- Temperature input -->
-            <div class="section-label" style="margin-top: 12px;">
-                <span class="icon">🌡️</span> Temperatura
-            </div>
-            <div class="temp-input-group">
-                <input type="number" step="0.1" id="tempInput" placeholder="0.0">
-                <span class="temp-unit">°C</span>
+            <!-- Temperature -->
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <span>🌡️</span> Temperatura
+                </div>
+                <div class="flex items-center gap-3">
+                    <input type="number" step="0.1" id="tempInput" placeholder="0.0"
+                           class="w-28 px-4 py-3 border-2 border-gray-200 rounded-xl text-base font-bold text-center focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
+                    <span class="text-base font-bold text-gray-500">°C</span>
+                </div>
             </div>
 
             <!-- Observations -->
-            <div class="section-label" style="margin-top: 12px;">
-                <span class="icon">📝</span> Observaciones
-            </div>
-            <div class="detail-input-group">
-                <textarea id="obsInput" placeholder="Observaciones del producto..." rows="3"></textarea>
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <span>📝</span> Observaciones
+                </div>
+                <textarea id="obsInput" placeholder="Observaciones del producto..." rows="3"
+                          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-medium resize-none focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all"></textarea>
             </div>
 
             <!-- Photo capture -->
-            <div class="section-label" style="margin-top: 12px;">
-                <span class="icon">📸</span> Evidencia Fotográfica
-            </div>
-            <div class="photo-capture-area">
-                <!-- Camera preview (hidden until activated) -->
-                <div id="cameraContainer" style="display:none;">
-                    <video id="cameraPreview" autoplay playsinline></video>
-                    <div class="camera-controls">
-                        <button class="btn-capture" onclick="takePhoto()" title="Tomar foto">📸 Capturar</button>
-                        <button class="btn-cancel-cam" onclick="stopCamera()" title="Cancelar">✖ Cancelar</button>
-                    </div>
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <span>📸</span> Evidencia Fotográfica
                 </div>
-
-                <!-- Captured photo preview -->
-                <div id="photoPreview" style="display:none;">
-                    <img id="capturedPhoto" src="" alt="Foto capturada">
-                    <div class="photo-actions">
-                        <button class="btn-retake" onclick="retakePhoto()">🔄 Retomar</button>
-                        <button class="btn-remove-photo" onclick="removePhoto()">🗑️ Eliminar</button>
+                <div class="photo-capture-area">
+                    <div id="cameraContainer" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
+                        <video id="cameraPreview" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
+                        <div class="flex gap-2 p-2.5 bg-black/70">
+                            <button onclick="takePhoto()" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
+                            <button onclick="stopCamera()" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
+                        </div>
                     </div>
+
+                    <div id="photoPreview" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
+                        <img id="capturedPhoto" src="" alt="Foto capturada" class="w-full block max-h-[250px] object-cover">
+                        <div class="flex gap-2 p-2 bg-gray-50">
+                            <button onclick="retakePhoto()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
+                            <button onclick="removePhoto()" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+
+                    <button id="btnOpenCamera" onclick="openCamera()"
+                            class="w-full py-3.5 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">
+                        📷 Tomar Foto como Evidencia
+                    </button>
+
+                    <canvas id="photoCanvas" style="display:none;"></canvas>
                 </div>
-
-                <!-- Button to open camera -->
-                <button class="btn-open-camera" id="btnOpenCamera" onclick="openCamera()">
-                    📷 Tomar Foto como Evidencia
-                </button>
-
-                <!-- Hidden canvas for capturing -->
-                <canvas id="photoCanvas" style="display:none;"></canvas>
             </div>
         </div>
 
         <!-- Save button -->
-        <div class="btn-action-row">
-            <button class="btn-primary" onclick="guardarAuditoria()" id="btnGuardar">
+        <div class="flex justify-end">
+            <button onclick="guardarAuditoria()" id="btnGuardar"
+                    class="px-8 py-3.5 bg-gradient-to-r from-ransa-700 to-ransa-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-ransa-700/25 hover:shadow-xl hover:shadow-ransa-700/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center gap-2">
                 📥 Guardar Auditoría
             </button>
         </div>
 
         <!-- Logo footer -->
-        <div class="logo-footer">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        <div class="text-center py-6">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
         </div>
     </div>
 
@@ -184,14 +193,12 @@ let capturedPhotoData = null;
 document.addEventListener('DOMContentLoaded', () => {
     requireAuth();
     loadSedes();
-    
+
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     document.getElementById('auditorName').textContent = user.nombre_completo || '-';
-    
-    // Show detail section when camera selected
+
     document.getElementById('camaraSelect').addEventListener('change', (e) => {
         document.getElementById('detailSection').style.display = e.target.value ? 'block' : 'none';
-        // Reset fields
         if (!e.target.value) {
             resetDetailFields();
         }
@@ -222,8 +229,7 @@ async function loadSedes() {
 async function onSedeChange() {
     const sedeId = document.getElementById('sedeSelect').value;
     if (!sedeId) return;
-    
-    // Load cameras
+
     try {
         const data = await apiGet(`/api/sedes/${sedeId}/camaras`);
         camaras = data;
@@ -232,13 +238,12 @@ async function onSedeChange() {
         data.forEach(c => {
             select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
         });
-        
+
         document.getElementById('totalCamaras').textContent = data.length;
     } catch (e) {
         showToast('Error al cargar cámaras', 'error');
     }
-    
-    // Check for active audit
+
     try {
         const audit = await apiGet(`/api/auditorias/activa?sede_id=${sedeId}`);
         if (audit) {
@@ -258,7 +263,7 @@ async function createNewAudit() {
         showToast('Selecciona una sede primero', 'warning');
         return;
     }
-    
+
     try {
         showLoading(true);
         const audit = await apiPost('/api/auditorias', { sede_id: parseInt(sedeId) });
@@ -277,20 +282,15 @@ function updateAuditUI(audit) {
     document.getElementById('auditadas').textContent = audit.camaras_auditadas;
     document.getElementById('totalCamaras').textContent = audit.total_camaras;
     document.getElementById('restantes').textContent = audit.total_camaras - audit.camaras_auditadas;
-    
-    // Disable already audited cameras in the select dropdown
+
     const select = document.getElementById('camaraSelect');
-    
-    // First, reset all options to enabled
     Array.from(select.options).forEach(opt => {
         if(opt.value !== "") {
             opt.disabled = false;
-            // Remove "(Completada)" if it exists
             opt.text = opt.text.replace(" (Completada)", "");
         }
     });
 
-    // If there are detailed registers, disable those options
     if (audit.detalles && audit.detalles.length > 0) {
         audit.detalles.forEach(d => {
             const optionToDisable = select.querySelector(`option[value="${d.camara_id}"]`);
@@ -309,8 +309,7 @@ function resetAuditUI() {
     document.getElementById('auditadas').textContent = '0';
     document.getElementById('restantes').textContent = '0';
     currentAudit = null;
-    
-    // Also reset the select dropdown options completely if audit resets
+
     const select = document.getElementById('camaraSelect');
     if (select) {
         Array.from(select.options).forEach(opt => {
@@ -321,10 +320,6 @@ function resetAuditUI() {
         });
     }
 }
-
-// ============================
-// Camera / Photo Functions
-// ============================
 
 async function openCamera() {
     try {
@@ -338,31 +333,30 @@ async function openCamera() {
         cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
         const video = document.getElementById('cameraPreview');
         video.srcObject = cameraStream;
-        
+
         document.getElementById('cameraContainer').style.display = 'block';
         document.getElementById('btnOpenCamera').style.display = 'none';
         document.getElementById('photoPreview').style.display = 'none';
     } catch (err) {
         showToast('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
-        console.error('Camera error:', err);
     }
 }
 
 function takePhoto() {
     const video = document.getElementById('cameraPreview');
     const canvas = document.getElementById('photoCanvas');
-    
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0);
-    
+
     capturedPhotoData = canvas.toDataURL('image/jpeg', 0.8);
-    
+
     document.getElementById('capturedPhoto').src = capturedPhotoData;
     document.getElementById('photoPreview').style.display = 'block';
-    
+
     stopCamera();
 }
 
@@ -372,7 +366,7 @@ function stopCamera() {
         cameraStream = null;
     }
     document.getElementById('cameraContainer').style.display = 'none';
-    
+
     if (!capturedPhotoData) {
         document.getElementById('btnOpenCamera').style.display = 'block';
     }
@@ -391,30 +385,25 @@ function removePhoto() {
     stopCamera();
 }
 
-// ============================
-// Save Audit
-// ============================
-
 async function guardarAuditoria() {
     if (!currentAudit) {
         showToast('Crea una auditoría primero con el botón +', 'warning');
         return;
     }
-    
+
     const camaraId = document.getElementById('camaraSelect').value;
     if (!camaraId) {
         showToast('Selecciona una cámara', 'warning');
         return;
     }
-    
+
     const producto = document.getElementById('productoInput').value;
     const temp = document.getElementById('tempInput').value;
     const obs = document.getElementById('obsInput').value;
-    
+
     try {
         showLoading(true);
-        
-        // Upload photo first if captured
+
         let fotoUrl = null;
         if (capturedPhotoData) {
             const uploadResult = await apiPost('/api/auditorias/upload-foto', {
@@ -422,7 +411,7 @@ async function guardarAuditoria() {
             });
             fotoUrl = uploadResult.foto_url;
         }
-        
+
         const detalle = await apiPost(`/api/auditorias/${currentAudit.id}/detalle`, {
             camara_id: parseInt(camaraId),
             nombre_producto: producto || null,
@@ -430,22 +419,26 @@ async function guardarAuditoria() {
             observaciones: obs || null,
             foto_url: fotoUrl
         });
-        
-        // Update counters
+
         currentAudit.camaras_auditadas++;
-        
-        // Add the new detail to currentAudit so it gets disabled
+
         if (!currentAudit.detalles) currentAudit.detalles = [];
         currentAudit.detalles.push(detalle);
-        
+
         updateAuditUI(currentAudit);
-        
-        // Reset inputs
+
         resetDetailFields();
         document.getElementById('camaraSelect').value = '';
         document.getElementById('detailSection').style.display = 'none';
-        
-        showToast('Registro guardado exitosamente ✅', 'success');
+
+        showToast('Registro guardado exitosamente', 'success');
+
+        // Compliance notification
+        if (detalle.cumple_rango === true) {
+            setTimeout(() => showToast(`✅ Temperatura en cumplimiento (rango: ${detalle.rango_esperado})`, 'success'), 800);
+        } else if (detalle.cumple_rango === false) {
+            setTimeout(() => showToast(`⚠️ Temperatura fuera de rango (esperado: ${detalle.rango_esperado}, registrado: ${temp}°C)`, 'warning'), 800);
+        }
     } catch (e) {
         showToast('Error: ' + e.message, 'error');
     } finally {

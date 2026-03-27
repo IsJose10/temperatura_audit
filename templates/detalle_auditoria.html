@@ -4,32 +4,35 @@
 {% block body %}
 <div class="app-container">
     <!-- Header -->
-    <div class="app-header">
-        <div class="header-title" style="flex:1;">
-            <div class="icon" onclick="window.history.back()" style="cursor:pointer;">⬅️</div>
-            DETALLE AUDITORÍA
+    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3 flex-1">
+            <button onclick="window.history.back()" class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg hover:bg-white/25 transition-all cursor-pointer">⬅️</button>
+            <span class="font-bold text-base tracking-wide">DETALLE AUDITORÍA</span>
         </div>
-        <div class="header-actions">
-            <button onclick="loadDetalle()" title="Refrescar">🔄</button>
+        <div class="flex gap-2">
+            <button onclick="loadDetalle()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Refrescar">🔄</button>
+            <button id="btnDownloadPdf" onclick="downloadPdf()" style="display:none" class="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center gap-1.5 transition-all duration-200 text-xs font-semibold" title="Descargar PDF">
+                📄 PDF
+            </button>
         </div>
     </div>
 
     <!-- Content -->
-    <div class="content-area">
+    <div class="px-5 py-5 pb-24 space-y-5">
         <!-- Main Audit Info -->
-        <div id="auditOverview" style="margin-bottom: 20px;">
+        <div id="auditOverview">
             <div class="spinner"></div>
         </div>
 
         <!-- Cameras List -->
-        <h3 style="margin-bottom: 12px; color: var(--primary-color);">🏪 Registros por Cámara</h3>
-        <div id="camerasList">
+        <h3 class="text-sm font-bold text-ransa-700 flex items-center gap-2">🏪 Registros por Cámara</h3>
+        <div id="camerasList" class="space-y-4">
             <!-- Filled via JS -->
         </div>
 
         <!-- Logo footer -->
-        <div class="logo-footer" style="margin-top: 40px;">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        <div class="text-center py-10">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
         </div>
     </div>
 
@@ -54,7 +57,6 @@
     </nav>
 </div>
 
-<!-- Extra hidden inputs -->
 <input type="hidden" id="auditoriaId" value="{{ auditoria_id }}">
 {% endblock %}
 
@@ -69,74 +71,113 @@ async function loadDetalle() {
     const id = document.getElementById('auditoriaId').value;
     const overviewContainer = document.getElementById('auditOverview');
     const listContainer = document.getElementById('camerasList');
-    
+
     overviewContainer.innerHTML = '<div class="spinner"></div>';
     listContainer.innerHTML = '';
-    
+
     try {
         const audit = await apiGet(`/api/historico/auditorias/${id}`);
-        
-        // Render Overview
+
+        // Show/hide PDF button based on audit state
+        const btnPdf = document.getElementById('btnDownloadPdf');
+        if (audit.estado === 'completada') {
+            btnPdf.style.display = 'flex';
+        } else {
+            btnPdf.style.display = 'none';
+        }
+
+        // Get compliance data
+        let cumplimientoMap = {};
+        try {
+            const cumplData = await apiGet(`/api/auditorias/${id}/cumplimiento`);
+            if (cumplData && cumplData.detalles) {
+                cumplData.detalles.forEach(c => {
+                    cumplimientoMap[c.camara_nombre] = c;
+                });
+            }
+        } catch(e) { /* compliance info is optional */ }
+
         overviewContainer.innerHTML = `
-            <div class="form-section" style="background: white; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-                    <span style="font-size:18px; font-weight:700; color:var(--text-primary);">
-                        <span class="icon">🏷️</span> ${audit.id_auditoria}
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        🏷️ ${audit.id_auditoria}
                     </span>
-                    <span class="status-badge ${audit.estado === 'completada' ? 'completed' : 'in-progress'}">
+                    <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${audit.estado === 'completada' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
                         ${audit.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
                     </span>
                 </div>
-                
-                <div style="display:flex;gap:12px;margin-bottom:15px;">
-                    <div class="stat-card" style="flex:1;">
-                        <div class="stat-value" style="font-size:20px;">${audit.camaras_auditadas}</div>
-                        <div class="stat-label">Auditadas</div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-ransa-50 rounded-xl p-3 text-center">
+                        <div class="text-xl font-extrabold text-ransa-700">${audit.camaras_auditadas}</div>
+                        <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Auditadas</div>
                     </div>
-                    <div class="stat-card" style="flex:1;">
-                        <div class="stat-value" style="font-size:20px;">${audit.total_camaras}</div>
-                        <div class="stat-label">Total</div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-center">
+                        <div class="text-xl font-extrabold text-gray-600">${audit.total_camaras}</div>
+                        <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Total</div>
                     </div>
                 </div>
 
-                <div class="form-field" style="margin-bottom:8px;"><span class="field-icon">🏢</span><span class="field-value">${audit.sede_nombre || '-'}</span></div>
-                <div class="form-field" style="margin-bottom:8px;"><span class="field-icon">👤</span><span class="field-value">${audit.nombre_auditor || audit.auditor_nombre || '-'}</span></div>
-                <div class="form-field"><span class="field-icon">📅</span><span class="field-value">${formatDate(audit.fecha)}</span></div>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl text-sm text-gray-700">
+                        <span>🏢</span> <span class="font-medium">${audit.sede_nombre || '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl text-sm text-gray-700">
+                        <span>👤</span> <span class="font-medium">${audit.nombre_auditor || audit.auditor_nombre || '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl text-sm text-gray-700">
+                        <span>📅</span> <span class="font-medium">${formatDate(audit.fecha)}</span>
+                    </div>
+                </div>
             </div>
         `;
-        
-        // Render Cameras List
+
         if (audit.detalles && audit.detalles.length > 0) {
             listContainer.innerHTML = audit.detalles.map((d, i) => {
-                let tempColor = 'var(--text-primary)';
+                let tempColor = 'text-gray-500';
                 if (d.temperatura !== null) {
-                    if (d.temperatura < 0) tempColor = 'var(--info)';
-                    else if (d.temperatura > 8) tempColor = 'var(--danger)';
-                    else tempColor = 'var(--ransa-green)';
+                    if (d.temperatura < 0) tempColor = 'text-blue-600';
+                    else if (d.temperatura > 8) tempColor = 'text-red-600';
+                    else tempColor = 'text-ransa-700';
                 }
-                
+
+                // Compliance badge
+                const cName = d.camara_nombre || ('Cámara ' + d.camara_id);
+                const compl = cumplimientoMap[cName];
+                let complianceBadge = '';
+                if (compl && compl.cumple === true) {
+                    complianceBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700" title="Rango: ${compl.rango}">✓ Cumple</span>`;
+                } else if (compl && compl.cumple === false) {
+                    complianceBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-600" title="Rango esperado: ${compl.rango}">✗ Fuera de rango</span>`;
+                }
+
                 return `
-                <div class="audit-card animate-in" style="animation-delay: ${i * 0.05}s; cursor: default; margin-bottom: 15px;">
-                    <div class="audit-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px;">
-                        <div class="audit-id" style="font-size: 16px;">🏪 ${d.camara_nombre || 'Cámara ' + d.camara_id}</div>
-                        <span style="font-weight:700; font-size: 18px; color: ${tempColor};">
-                            ${d.temperatura !== null ? d.temperatura + '°C' : 'Sin registro'}
-                        </span>
+                <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm animate-in" style="animation-delay: ${i * 0.05}s">
+                    <div class="flex justify-between items-center pb-3 mb-3 border-b border-gray-100">
+                        <div class="font-bold text-sm text-ransa-700 flex items-center gap-2">🏪 ${cName}</div>
+                        <div class="flex items-center gap-2">
+                            ${complianceBadge}
+                            <span class="font-extrabold text-lg ${tempColor}">
+                                ${d.temperatura !== null ? d.temperatura + '°C' : 'Sin registro'}
+                            </span>
+                        </div>
                     </div>
-                    
-                    <div class="audit-info" style="gap: 10px;">
-                        ${d.nombre_producto ? `<div><span class="icon">📦</span> <strong>Producto:</strong> ${d.nombre_producto}</div>` : ''}
-                        ${d.observaciones ? `<div style="color: var(--gray-500); font-style: italic;"><span class="icon">📝</span> ${d.observaciones}</div>` : ''}
-                        
-                        <div style="display:flex; justify-content: space-between; margin-top: 5px; color: var(--gray-400); font-size: 12px;">
+
+                    <div class="space-y-1.5 text-xs text-gray-600">
+                        ${d.nombre_producto ? `<div class="flex items-center gap-2">📦 <strong>Producto:</strong> ${d.nombre_producto}</div>` : ''}
+                        ${compl && compl.rango ? `<div class="flex items-center gap-2">🎯 <strong>Rango esperado:</strong> ${compl.rango}</div>` : ''}
+                        ${d.observaciones ? `<div class="flex items-start gap-2 text-gray-400 italic">📝 ${d.observaciones}</div>` : ''}
+
+                        <div class="flex justify-between mt-2 pt-2 border-t border-gray-50 text-[10px] text-gray-400">
                             <span>👤 ${d.nombre_auditor || '-'}</span>
                             <span>📅 ${d.fecha_registro || '-'} ${d.hora_registro || ''}</span>
                         </div>
                     </div>
-                    
+
                     ${d.foto_url ? `
-                    <div style="margin-top: 15px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color);">
-                        <img src="${d.foto_url}" style="width: 100%; display: block;" alt="Evidencia">
+                    <div class="mt-3 rounded-xl overflow-hidden border border-gray-100">
+                        <img src="${d.foto_url}" class="w-full block" alt="Evidencia">
                     </div>
                     ` : ''}
                 </div>
@@ -144,16 +185,42 @@ async function loadDetalle() {
             }).join('');
         } else {
             listContainer.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <div class="empty-text">Aún no hay cámaras auditadas en este registro</div>
+                <div class="text-center py-16 text-gray-400">
+                    <div class="text-5xl mb-3 opacity-50">📭</div>
+                    <div class="text-sm font-medium">Aún no hay cámaras auditadas</div>
                 </div>
             `;
         }
-        
+
     } catch (e) {
-        overviewContainer.innerHTML = `<div class="empty-state"><div class="empty-text">Error al cargar detalle: ${e.message}</div></div>`;
+        overviewContainer.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm">Error al cargar detalle: ${e.message}</div></div>`;
         showToast('Error al cargar detalle', 'error');
+    }
+}
+
+async function downloadPdf() {
+    const id = document.getElementById('auditoriaId').value;
+    const token = localStorage.getItem('token');
+    try {
+        showLoading(true);
+        const response = await fetch(`/api/auditorias/${id}/pdf`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Error al generar PDF');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `FR-CAL-032_Auditoria_${id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        showToast('PDF descargado exitosamente', 'success');
+    } catch (e) {
+        showToast('Error al descargar PDF: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
     }
 }
 

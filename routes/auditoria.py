@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime, date
+from datetime import datetime
 import base64
 import os
 import uuid
@@ -13,6 +13,7 @@ from models.usuario import Usuario
 from schemas.auditoria import AuditoriaCreate, AuditoriaDetalleCreate, AuditoriaResponse, AuditoriaDetalleResponse
 from schemas.camara import SedeResponse, CamaraResponse
 from routes.auth import get_current_user
+from config_rangos import verificar_cumplimiento
 
 router = APIRouter(prefix="/api", tags=["Auditorías"])
 
@@ -189,6 +190,13 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
             existing.foto_url = data.foto_url
         db.commit()
         db.refresh(existing)
+
+        # Compliance check
+        sede = db.query(Sede).filter(Sede.id == auditoria.sede_id).first()
+        cumplimiento = {"cumple": None, "rango": "No definido"}
+        if sede and existing.temperatura is not None:
+            cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(existing.temperatura))
+
         return AuditoriaDetalleResponse(
             id=existing.id,
             camara_id=existing.camara_id,
@@ -200,7 +208,9 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
             nombre_auditor=existing.nombre_auditor,
             fecha_registro=existing.fecha_registro,
             hora_registro=existing.hora_registro,
-            registrado_at=existing.registrado_at
+            registrado_at=existing.registrado_at,
+            cumple_rango=cumplimiento.get("cumple"),
+            rango_esperado=cumplimiento.get("rango")
         )
 
     detalle = AuditoriaDetalle(
@@ -226,6 +236,12 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
     db.commit()
     db.refresh(detalle)
 
+    # Compliance check
+    sede = db.query(Sede).filter(Sede.id == auditoria.sede_id).first()
+    cumplimiento = {"cumple": None, "rango": "No definido"}
+    if sede and detalle.temperatura is not None:
+        cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(detalle.temperatura))
+
     return AuditoriaDetalleResponse(
         id=detalle.id,
         camara_id=detalle.camara_id,
@@ -237,7 +253,9 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
         nombre_auditor=detalle.nombre_auditor,
         fecha_registro=detalle.fecha_registro,
         hora_registro=detalle.hora_registro,
-        registrado_at=detalle.registrado_at
+        registrado_at=detalle.registrado_at,
+        cumple_rango=cumplimiento.get("cumple"),
+        rango_esperado=cumplimiento.get("rango")
     )
 
 

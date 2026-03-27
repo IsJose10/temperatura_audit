@@ -2,37 +2,60 @@
 {% block title %}RANSA - Iniciar Sesión{% endblock %}
 
 {% block body %}
-<div class="app-container">
-    <div class="login-container">
-        <div class="login-header" style="flex-direction:column;align-items:center;gap:8px;">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:48px;margin-bottom:8px;">
-            TOMA DE TEMPERATURA
+<div class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-ransa-900 via-ransa-800 to-ransa-950 px-6 py-12 relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-ransa-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="relative z-10 w-full max-w-sm">
+        <!-- Logo -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-white/10 backdrop-blur-lg rounded-2xl mb-5 border border-white/20 shadow-2xl p-3">
+                <img src="/static/img/ransa_icon_original.jpg" alt="RANSA" class="h-full w-full object-contain rounded-lg">
+            </div>
+            <h1 class="text-white text-2xl font-bold tracking-wide">RANSA</h1>
+            <p class="text-ransa-300 text-sm font-medium mt-1">Auditoría de Temperatura</p>
         </div>
 
-        <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
-            <div class="form-label">Usuario</div>
-            <div class="input-group">
-                <span class="input-icon">👤</span>
-                <input type="text" id="username" placeholder="Usuario" required autocomplete="username">
-            </div>
+        <!-- Form Card -->
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-6">
+                <div>
+                    <label class="block text-ransa-200 text-xs font-semibold uppercase tracking-wider mb-2">Usuario</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ransa-400 text-lg">👤</span>
+                        <input type="text" id="username" placeholder="Tu usuario"
+                               class="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-ransa-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all duration-300"
+                               required autocomplete="username">
+                    </div>
+                </div>
 
-            <div class="form-label">Contraseña</div>
-            <div class="input-group">
-                <span class="input-icon">🔒</span>
-                <input type="password" id="password" placeholder="Contraseña" required autocomplete="current-password">
-            </div>
+                <div>
+                    <label class="block text-ransa-200 text-xs font-semibold uppercase tracking-wider mb-2">Contraseña</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-ransa-400 text-lg">🔒</span>
+                        <input type="password" id="password" placeholder="Tu contraseña"
+                               class="w-full pl-12 pr-4 py-3.5 bg-white/10 border border-white/20 rounded-xl text-white placeholder-ransa-400 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all duration-300"
+                               required autocomplete="current-password">
+                    </div>
+                </div>
 
-            <button type="submit" class="btn-login" id="btnLogin">
-                Ingresar
-            </button>
-        </form>
+                <button type="submit" id="btnLogin"
+                        class="w-full py-4 bg-gradient-to-r from-ransa-500 to-emerald-400 text-white rounded-xl text-sm font-bold uppercase tracking-wider shadow-lg shadow-ransa-500/30 hover:shadow-xl hover:shadow-ransa-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                    Ingresar
+                </button>
+            </form>
+        </div>
 
-        <div class="login-logo">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:36px;opacity:0.7;">
+        <!-- Footer -->
+        <div class="text-center mt-10 opacity-50">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto" style="filter: brightness(0) invert(1); opacity: 0.5;">
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_scripts %}
@@ -41,10 +64,10 @@ async function handleLogin(e) {
     e.preventDefault();
     const btn = document.getElementById('btnLogin');
     const form = document.getElementById('loginForm');
-    
+
     btn.disabled = true;
     btn.textContent = 'Ingresando...';
-    
+
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -54,18 +77,18 @@ async function handleLogin(e) {
                 password: document.getElementById('password').value
             })
         });
-        
+
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.detail || 'Error de autenticación');
         }
-        
+
         const data = await response.json();
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
+
         showToast('¡Bienvenido, ' + data.user.nombre_completo + '!', 'success');
-        
+
         setTimeout(() => {
             window.location.href = '/auditoria';
         }, 500);

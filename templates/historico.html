@@ -4,24 +4,26 @@
 {% block body %}
 <div class="app-container">
     <!-- Header -->
-    <div class="app-header">
-        <div class="header-title">
-            <div class="icon">📚</div>
-            HISTÓRICO DE AUDITORÍAS
+    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg">📚</div>
+            <span class="font-bold text-base tracking-wide">HISTÓRICO</span>
         </div>
-        <div class="header-actions">
-            <button onclick="loadHistorico()" title="Refrescar">🔄</button>
+        <div class="flex gap-2">
+            <button onclick="loadHistorico()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Refrescar">🔄</button>
         </div>
     </div>
 
     <!-- Content -->
-    <div class="content-area">
+    <div class="px-5 py-5 pb-24 space-y-4">
         <!-- Filters -->
-        <div class="filter-row">
-            <select id="filterSede" onchange="loadHistorico()">
+        <div class="flex gap-3">
+            <select id="filterSede" onchange="loadHistorico()"
+                    class="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
                 <option value="">Todas las sedes</option>
             </select>
-            <select id="filterEstado" onchange="loadHistorico()">
+            <select id="filterEstado" onchange="loadHistorico()"
+                    class="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
                 <option value="">Todos</option>
                 <option value="completada">Completadas</option>
                 <option value="en_progreso">En Progreso</option>
@@ -34,8 +36,8 @@
         </div>
 
         <!-- Logo footer -->
-        <div class="logo-footer">
-            <img src="/static/img/ransa_logo.svg" alt="RANSA" style="height:32px;opacity:0.7;">
+        <div class="text-center py-6">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
         </div>
     </div>
 
@@ -84,45 +86,45 @@ async function loadSedesFilter() {
 async function loadHistorico() {
     const container = document.getElementById('historicoList');
     container.innerHTML = '<div class="spinner"></div>';
-    
+
     const sedeId = document.getElementById('filterSede').value;
     const estado = document.getElementById('filterEstado').value;
-    
+
     let url = '/api/historico/auditorias?limit=50';
     if (sedeId) url += `&sede_id=${sedeId}`;
     if (estado) url += `&estado=${estado}`;
-    
+
     try {
         const auditorias = await apiGet(url);
-        
+
         if (auditorias.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📭</div>
-                    <div class="empty-text">No se encontraron auditorías</div>
+                <div class="text-center py-16 text-gray-400">
+                    <div class="text-5xl mb-3 opacity-50">📭</div>
+                    <div class="text-sm font-medium">No se encontraron auditorías</div>
                 </div>
             `;
             return;
         }
-        
+
         container.innerHTML = auditorias.map((a, i) => `
-            <div class="audit-card animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/historico/detalle/${a.id}'">
-                <div class="audit-header">
-                    <div class="audit-id">${a.id_auditoria}</div>
-                    <span class="status-badge ${a.estado === 'completada' ? 'completed' : 'in-progress'}">
+            <div class="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300 cursor-pointer animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/historico/detalle/${a.id}'">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="font-bold text-sm text-ransa-700">${a.id_auditoria}</div>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${a.estado === 'completada' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
                         ${a.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
                     </span>
                 </div>
-                <div class="audit-info">
-                    <span><span class="icon">🏢</span> ${a.sede_nombre || '-'}</span>
-                    <span><span class="icon">👤</span> ${a.auditor_nombre || '-'}</span>
-                    <span><span class="icon">📅</span> ${formatDate(a.fecha)}</span>
-                    <span><span class="icon">📊</span> ${a.camaras_auditadas}/${a.total_camaras} cámaras</span>
+                <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+                    <span class="flex items-center gap-1">🏢 ${a.sede_nombre || '-'}</span>
+                    <span class="flex items-center gap-1">👤 ${a.auditor_nombre || '-'}</span>
+                    <span class="flex items-center gap-1">📅 ${formatDate(a.fecha)}</span>
+                    <span class="flex items-center gap-1">📊 ${a.camaras_auditadas}/${a.total_camaras}</span>
                 </div>
             </div>
         `).join('');
     } catch (e) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-text">Error al cargar histórico</div></div>`;
+        container.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm font-medium">Error al cargar histórico</div></div>`;
         showToast('Error al cargar histórico', 'error');
     }
 }
