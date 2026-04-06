@@ -2,10 +2,11 @@ import psycopg
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from config import DATABASE_URL, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+import os
 
 
 def init_database():
-    """Create the database if it does not exist."""
+    """Create the database if it does not exist (ONLY LOCAL)."""
     try:
         conn = psycopg.connect(
             host=DB_HOST,
@@ -29,10 +30,18 @@ def init_database():
         raise
 
 
-# Initialize database
-init_database()
+# ✅ SOLO SE EJECUTA EN LOCAL (NO EN RENDER)
+if not os.getenv("DATABASE_URL"):
+    init_database()
 
-engine = create_engine(DATABASE_URL, echo=False)
+
+# ✅ ENGINE PARA RENDER (CON SSL)
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    connect_args={"sslmode": "require"}
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -43,3 +52,5 @@ def get_db():
         yield db
     finally:
         db.close()
+
+        
