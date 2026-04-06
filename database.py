@@ -4,36 +4,39 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from config import DATABASE_URL
 import os
 
-
 def init_database():
-    """Create the database if it does not exist (ONLY LOCAL)."""
+    """Create database ONLY in local."""
     try:
         conn = psycopg.connect(
-            DATABASE_URL,
+            host="localhost",
+            port=5432,
+            user="postgres",
+            password="1015",
+            dbname="postgres",
             autocommit=True
         )
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM pg_database WHERE datname = 'temperatura_audit'")
+        if not cur.fetchone():
+            cur.execute('CREATE DATABASE "temperatura_audit"')
+            print("[OK] DB creada")
+        cur.close()
         conn.close()
-        print("[OK] Conexión local verificada.")
     except Exception as e:
-        print(f"[ERROR] Error de conexión: {e}")
-        raise
+        print(f"[ERROR] {e}")
 
-
-# ✅ SOLO LOCAL (cuando NO hay DATABASE_URL de Render)
-if os.getenv("DATABASE_URL") is None:
+# SOLO LOCAL
+if not os.getenv("DATABASE_URL"):
     init_database()
 
-
-# ✅ ENGINE (sirve tanto local como Render)
+# 🔥 ENGINE CORRECTO
 engine = create_engine(
     DATABASE_URL,
-    echo=False,
-    connect_args={"sslmode": "require"}  # Render necesita SSL
+    echo=False
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
 
 def get_db():
     db = SessionLocal()
