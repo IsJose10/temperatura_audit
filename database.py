@@ -1,7 +1,7 @@
 import psycopg
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
-from config import DATABASE_URL, DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+from config import DATABASE_URL
 import os
 
 
@@ -9,37 +9,26 @@ def init_database():
     """Create the database if it does not exist (ONLY LOCAL)."""
     try:
         conn = psycopg.connect(
-            host=DB_HOST,
-            port=int(DB_PORT),
-            user=DB_USER,
-            password=DB_PASSWORD,
-            dbname="postgres",
+            DATABASE_URL,
             autocommit=True
         )
-        cur = conn.cursor()
-        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (DB_NAME,))
-        if not cur.fetchone():
-            cur.execute(f'CREATE DATABASE "{DB_NAME}"')
-            print(f"[OK] Base de datos '{DB_NAME}' creada exitosamente.")
-        else:
-            print(f"[OK] Base de datos '{DB_NAME}' ya existe.")
-        cur.close()
         conn.close()
+        print("[OK] Conexión local verificada.")
     except Exception as e:
-        print(f"[ERROR] Error al crear la base de datos: {e}")
+        print(f"[ERROR] Error de conexión: {e}")
         raise
 
 
-# ✅ SOLO SE EJECUTA EN LOCAL (NO EN RENDER)
-if not os.getenv("DATABASE_URL"):
+# ✅ SOLO LOCAL (cuando NO hay DATABASE_URL de Render)
+if os.getenv("DATABASE_URL") is None:
     init_database()
 
 
-# ✅ ENGINE PARA RENDER (CON SSL)
+# ✅ ENGINE (sirve tanto local como Render)
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    connect_args={"sslmode": "require"}
+    connect_args={"sslmode": "require"}  # Render necesita SSL
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -52,5 +41,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-        
