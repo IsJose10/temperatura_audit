@@ -11,6 +11,7 @@ class AuditoriaDetalleCreate(BaseModel):
     camara_id: int
     nombre_producto: Optional[str] = None
     temperatura: Optional[float] = None
+    temperatura_pasillo: Optional[float] = None
     observaciones: Optional[str] = None
     foto_url: Optional[str] = None
 
@@ -21,6 +22,7 @@ class AuditoriaDetalleResponse(BaseModel):
     camara_nombre: Optional[str] = None
     nombre_producto: Optional[str] = None
     temperatura: Optional[float] = None
+    temperatura_pasillo: Optional[float] = None
     observaciones: Optional[str] = None
     foto_url: Optional[str] = None
     nombre_auditor: Optional[str] = None

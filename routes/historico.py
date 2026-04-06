@@ -27,7 +27,14 @@ def get_historico(
     query = db.query(Auditoria)
 
     if current_user.rol != "administrador":
-        query = query.filter(Auditoria.auditor_id == current_user.id)
+        if current_user.regional:
+            regional_sede_ids = [s.id for s in db.query(Sede).filter(Sede.regional == current_user.regional).all()]
+            if regional_sede_ids:
+                query = query.filter(Auditoria.sede_id.in_(regional_sede_ids))
+            else:
+                query = query.filter(Auditoria.auditor_id == current_user.id)
+        else:
+            query = query.filter(Auditoria.auditor_id == current_user.id)
 
     if sede_id:
         query = query.filter(Auditoria.sede_id == sede_id)
@@ -54,6 +61,7 @@ def get_historico(
                 camara_nombre=camara.nombre if camara else None,
                 nombre_producto=d.nombre_producto,
                 temperatura=float(d.temperatura) if d.temperatura else None,
+                temperatura_pasillo=float(d.temperatura_pasillo) if d.temperatura_pasillo else None,
                 observaciones=d.observaciones,
                 foto_url=d.foto_url,
                 nombre_auditor=d.nombre_auditor,
@@ -102,6 +110,7 @@ def get_auditoria_detail(
             camara_nombre=camara.nombre if camara else None,
             nombre_producto=d.nombre_producto,
             temperatura=float(d.temperatura) if d.temperatura is not None else None,
+            temperatura_pasillo=float(d.temperatura_pasillo) if d.temperatura_pasillo is not None else None,
             observaciones=d.observaciones,
             foto_url=d.foto_url,
             nombre_auditor=d.nombre_auditor,

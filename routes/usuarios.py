@@ -42,12 +42,13 @@ def get_usuario(usuario_id: int, db: Session = Depends(get_db), current_user: Us
 
 @router.post("/", response_model=UsuarioResponse)
 def create_usuario(data: UsuarioCreate, db: Session = Depends(get_db), current_user: Usuario = Depends(require_admin)):
-    existing = db.query(Usuario).filter(Usuario.username == data.username).first()
+    username_lower = data.username.strip().lower()
+    existing = db.query(Usuario).filter(Usuario.username == username_lower).first()
     if existing:
         raise HTTPException(status_code=400, detail="El nombre de usuario ya existe")
 
     usuario = Usuario(
-        username=data.username,
+        username=username_lower,
         password_hash=get_password_hash(data.password),
         nombre_completo=data.nombre_completo,
         rol=data.rol,

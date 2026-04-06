@@ -52,7 +52,8 @@ def get_current_user(
 
 @router.post("/login", response_model=TokenResponse)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(Usuario).filter(Usuario.username == request.username).first()
+    username_lower = request.username.strip().lower()
+    user = db.query(Usuario).filter(Usuario.username == username_lower).first()
     if not user or not verify_password(request.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

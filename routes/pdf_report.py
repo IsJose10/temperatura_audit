@@ -207,15 +207,13 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
     header_style = ParagraphStyle('Header', parent=styles['Normal'], fontSize=7, fontName='Helvetica-Bold',
                                   alignment=TA_CENTER, leading=9, textColor=colors.white)
 
-    col_headers = ['Cámara', 'Rango\nEsperado', 'Temp °C', 'Hora', 'Producto', 'Observaciones', 'Cumple', 'Tablero', 'Temp.\nManual']
+    col_headers = ['Cámara', 'Rango\nEsperado', 'Temp\nProducto °C', 'Temp\nPasillo °C', 'Hora', 'Producto', 'Observaciones', 'Tablero', 'Temp.\nManual']
     header_row = [Paragraph(h.replace('\n', '<br/>'), header_style) for h in col_headers]
 
     table_data = [header_row]
 
     ransa_green = colors.HexColor('#009B3A')
     ransa_dark = colors.HexColor('#064e3b')
-
-    row_colors = []  # track compliance for coloring
 
     for detalle, camara in detalles_with_cameras:
         cumplimiento = verificar_cumplimiento(
@@ -224,41 +222,32 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
             float(detalle.temperatura) if detalle.temperatura is not None else 0
         )
         rango_str = cumplimiento["rango"]
-        cumple = cumplimiento["cumple"]
 
         temp_str = f'{float(detalle.temperatura):.1f}°C' if detalle.temperatura is not None else ''
+        temp_pasillo_str = f'{float(detalle.temperatura_pasillo):.1f}°C' if detalle.temperatura_pasillo is not None else ''
         hora_str = detalle.hora_registro.strftime('%H:%M') if detalle.hora_registro else ''
         producto_str = detalle.nombre_producto or ''
         obs_str = detalle.observaciones or ''
         camara_nombre = camara.nombre if camara else f'Cámara {detalle.camara_id}'
 
-        if cumple is True:
-            cumple_str = 'SI'
-        elif cumple is False:
-            cumple_str = 'NO'
-        else:
-            cumple_str = '-'
-
         row = [
             Paragraph(camara_nombre, cell_style),
             Paragraph(rango_str, cell_style),
             Paragraph(temp_str, cell_style),
+            Paragraph(temp_pasillo_str, cell_style),
             Paragraph(hora_str, cell_style),
             Paragraph(producto_str, cell_style),
             Paragraph(obs_str, cell_style),
-            Paragraph(f'<b>{cumple_str}</b>', cell_style),
             '',  # Tablero (empty for handwriting)
             '',  # Temp. Manual (empty for handwriting)
         ]
         table_data.append(row)
-        row_colors.append(cumple)
 
     # Add empty rows if less than 9 to keep a consistent look
     while len(table_data) < 10:
         table_data.append([''] * 9)
-        row_colors.append(None)
 
-    col_widths = [1.5 * inch, 0.85 * inch, 0.65 * inch, 0.55 * inch, 1.2 * inch, 1.8 * inch, 0.6 * inch, 0.95 * inch, 0.85 * inch]
+    col_widths = [1.4 * inch, 0.8 * inch, 0.7 * inch, 0.7 * inch, 0.5 * inch, 1.1 * inch, 1.7 * inch, 0.85 * inch, 0.75 * inch]
     main_table = Table(table_data, colWidths=col_widths, repeatRows=1)
 
     table_style_cmds = [
@@ -278,19 +267,11 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
     ]
 
-    # Alternate row colors + compliance coloring
-    for i, cumple in enumerate(row_colors):
-        row_idx = i + 1  # offset for header
-        if row_idx < len(table_data):
-            # Alternate background
-            if i % 2 == 0:
-                table_style_cmds.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor('#f8faf8')))
-            # Compliance coloring for the "Cumple" column
-            if cumple is True:
-                table_style_cmds.append(('TEXTCOLOR', (-1, row_idx), (-1, row_idx), ransa_green))
-            elif cumple is False:
-                table_style_cmds.append(('TEXTCOLOR', (-1, row_idx), (-1, row_idx), colors.HexColor('#dc2626')))
-                table_style_cmds.append(('BACKGROUND', (-1, row_idx), (-1, row_idx), colors.HexColor('#fef2f2')))
+    # Alternate row colors (no compliance coloring)
+    for i in range(len(table_data) - 1):
+        row_idx = i + 1
+        if row_idx < len(table_data) and i % 2 == 0:
+            table_style_cmds.append(('BACKGROUND', (0, row_idx), (-1, row_idx), colors.HexColor('#f8faf8')))
 
     main_table.setStyle(TableStyle(table_style_cmds))
     elements.append(main_table)
@@ -325,20 +306,27 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
     elements.append(obs_table)
     elements.append(Spacer(1, 14))
 
-    # --- Signatures ---
+    # --- Signatures with auditor names ---
     sign_style = ParagraphStyle('Sign', parent=styles['Normal'], fontSize=8, fontName='Helvetica-Bold')
+    sign_name_style = ParagraphStyle('SignName', parent=styles['Normal'], fontSize=8, fontName='Helvetica', alignment=TA_CENTER)
     sign_line = '_' * 40
 
     sign_data = [
         [
             Paragraph(f'<b>Realizado por:</b> {sign_line}', sign_style),
             Paragraph(f'<b>Revisado por:</b> {sign_line}', sign_style),
+        ],
+        [
+            Paragraph(responsables_text, sign_name_style),
+            Paragraph('', sign_name_style),
         ]
     ]
     sign_table = Table(sign_data, colWidths=[4.75 * inch, 4.75 * inch])
     sign_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 1), (-1, 1), 2),
+        ('ALIGN', (0, 1), (-1, 1), 'CENTER'),
     ]))
     elements.append(sign_table)
 

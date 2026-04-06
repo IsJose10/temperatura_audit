@@ -30,6 +30,7 @@ class AuditoriaDetalle(Base):
     camara_id = Column(Integer, ForeignKey("camaras.id"), nullable=False)
     nombre_producto = Column(String(200), nullable=True)
     temperatura = Column(Numeric(5, 2), nullable=True)
+    temperatura_pasillo = Column(Numeric(5, 2), nullable=True)
     observaciones = Column(Text, nullable=True)
     foto_url = Column(String(255), nullable=True)
     nombre_auditor = Column(String(150), nullable=True)

@@ -166,6 +166,7 @@ async function loadDetalle() {
 
                     <div class="space-y-1.5 text-xs text-gray-600">
                         ${d.nombre_producto ? `<div class="flex items-center gap-2">📦 <strong>Producto:</strong> ${d.nombre_producto}</div>` : ''}
+                        ${d.temperatura_pasillo !== null && d.temperatura_pasillo !== undefined ? `<div class="flex items-center gap-2">🌡️ <strong>Temp. Pasillo:</strong> ${d.temperatura_pasillo}°C</div>` : ''}
                         ${compl && compl.rango ? `<div class="flex items-center gap-2">🎯 <strong>Rango esperado:</strong> ${compl.rango}</div>` : ''}
                         ${d.observaciones ? `<div class="flex items-start gap-2 text-gray-400 italic">📝 ${d.observaciones}</div>` : ''}
 
