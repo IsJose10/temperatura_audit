@@ -173,9 +173,19 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
     mes = fecha.strftime('%m')
     anio = fecha.strftime('%Y')
 
+    # Extract all unique auditors
+    auditors = set()
+    if auditoria.nombre_auditor:
+        auditors.add(auditoria.nombre_auditor)
+    for detalle, camara in detalles_with_cameras:
+        if detalle.nombre_auditor:
+            auditors.add(detalle.nombre_auditor)
+            
+    responsables_text = " / ".join(auditors)
+
     responsible_data = [
         [
-            Paragraph(f'<b>Responsable:</b> {auditoria.nombre_auditor or ""}', info_style),
+            Paragraph(f'<b>Responsables:</b> {responsables_text}', info_style),
             Paragraph(f'<b>Sede:</b> {sede.nombre}', info_style),
             Paragraph(f'<b>Día</b> {dia}  <b>mes</b> {mes}  <b>año</b> {anio}', info_style),
         ]

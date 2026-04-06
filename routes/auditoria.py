@@ -62,6 +62,15 @@ def create_auditoria(data: AuditoriaCreate, db: Session = Depends(get_db), curre
         if sede.regional != current_user.regional:
             raise HTTPException(status_code=403, detail="No tienes acceso a esta regional")
 
+    # Check if there is already an active audit for this sede
+    active_audit = db.query(Auditoria).filter(
+        Auditoria.sede_id == data.sede_id,
+        Auditoria.estado == "en_progreso"
+    ).first()
+    if active_audit:
+        raise HTTPException(status_code=400, detail="Ya existe una auditoría en progreso para esta sede")
+
+
     total_camaras = db.query(Camara).filter(Camara.sede_id == data.sede_id, Camara.activo == True).count()
     id_auditoria = generate_audit_id(sede.codigo)
 
@@ -98,7 +107,6 @@ def create_auditoria(data: AuditoriaCreate, db: Session = Depends(get_db), curre
 def get_auditoria_activa(sede_id: int, db: Session = Depends(get_db), current_user: Usuario = Depends(get_current_user)):
     auditoria = db.query(Auditoria).filter(
         Auditoria.sede_id == sede_id,
-        Auditoria.auditor_id == current_user.id,
         Auditoria.estado == "en_progreso"
     ).order_by(Auditoria.fecha.desc()).first()
 

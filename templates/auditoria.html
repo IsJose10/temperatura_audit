@@ -24,7 +24,7 @@
                     class="flex-1 px-4 py-2.5 border-2 border-ransa-600 rounded-xl text-sm font-medium bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all appearance-none cursor-pointer">
                 <option value="">Seleccionar sede...</option>
             </select>
-            <button onclick="createNewAudit()" 
+            <button id="btnNuevaAuditoria" onclick="createNewAudit()" 
                     class="w-11 h-11 bg-gradient-to-br from-ransa-600 to-ransa-700 text-white rounded-xl text-xl flex items-center justify-center hover:shadow-lg hover:shadow-ransa-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0" 
                     title="Nueva auditoría">➕</button>
         </div>
@@ -62,11 +62,11 @@
         <!-- Auditor name -->
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
             <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                <span>👤</span> Nombre Auditor
+                <span>👤</span> <span id="lblAuditorName">Auditor en Curso</span>
             </div>
             <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
                 <span class="text-gray-400">👤</span>
-                <span class="flex-1 font-medium text-gray-800" id="auditorName">-</span>
+                <span class="flex-1 font-medium text-gray-800" id="auditorName" style="white-space: pre-line;">-</span>
             </div>
         </div>
 
@@ -283,6 +283,13 @@ function updateAuditUI(audit) {
     document.getElementById('totalCamaras').textContent = audit.total_camaras;
     document.getElementById('restantes').textContent = audit.total_camaras - audit.camaras_auditadas;
 
+    const btnNew = document.getElementById('btnNuevaAuditoria');
+    if (btnNew) {
+        btnNew.disabled = true;
+        btnNew.classList.add('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
+        btnNew.classList.remove('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
+    }
+
     const select = document.getElementById('camaraSelect');
     Array.from(select.options).forEach(opt => {
         if(opt.value !== "") {
@@ -291,8 +298,13 @@ function updateAuditUI(audit) {
         }
     });
 
+    const auditors = new Set();
+    if (audit.nombre_auditor) auditors.add(audit.nombre_auditor);
+
     if (audit.detalles && audit.detalles.length > 0) {
         audit.detalles.forEach(d => {
+            if (d.nombre_auditor) auditors.add(d.nombre_auditor);
+
             const optionToDisable = select.querySelector(`option[value="${d.camara_id}"]`);
             if (optionToDisable) {
                 optionToDisable.disabled = true;
@@ -301,6 +313,11 @@ function updateAuditUI(audit) {
                 }
             }
         });
+    }
+
+    if (auditors.size > 0) {
+        document.getElementById('lblAuditorName').textContent = auditors.size > 1 ? "Auditores Participantes" : "Auditor en Curso";
+        document.getElementById('auditorName').textContent = Array.from(auditors).join('\\n');
     }
 }
 
@@ -319,6 +336,19 @@ function resetAuditUI() {
             }
         });
     }
+    
+    const btnNew = document.getElementById('btnNuevaAuditoria');
+    if (btnNew) {
+        btnNew.disabled = false;
+        btnNew.classList.remove('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
+        btnNew.classList.add('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
+    }
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const lbl = document.getElementById('lblAuditorName');
+    if (lbl) lbl.textContent = "Auditor en Curso";
+    const nameSpan = document.getElementById('auditorName');
+    if (nameSpan) nameSpan.textContent = user.nombre_completo || '-';
 }
 
 async function openCamera() {
