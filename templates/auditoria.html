@@ -166,6 +166,95 @@
             </button>
         </div>
 
+        <!-- ===== Verificación de Termómetros ===== -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4" id="termometrosSection">
+            <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span>🌡️</span> Verificación de Termómetros
+            </div>
+
+            <!-- Termómetro Láser -->
+            <div class="rounded-xl border-2 border-blue-100 bg-blue-50/40 p-4 space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔵</span>
+                    <span class="font-bold text-sm text-blue-700">Termómetro Láser</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">N° Serie / ID</label>
+                        <input type="text" id="laserSerial" placeholder="Ej: TL-001"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha Calibración</label>
+                        <input type="date" id="laserCalFecha"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Referencia (°C)</label>
+                        <input type="number" step="0.1" id="laserTempRef" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Medida (°C)</label>
+                        <input type="number" step="0.1" id="laserTempMed" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Observaciones</label>
+                    <input type="text" id="laserObs" placeholder="Ej: Funcionando correctamente..."
+                           class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                </div>
+                <div id="laserDiffRow" class="hidden flex items-center justify-between bg-white rounded-xl px-4 py-2 border border-blue-100">
+                    <span class="text-xs text-gray-500 font-medium">Diferencia:</span>
+                    <span id="laserDiff" class="font-bold text-sm">—</span>
+                </div>
+            </div>
+
+            <!-- Termómetro Punzón -->
+            <div class="rounded-xl border-2 border-orange-100 bg-orange-50/40 p-4 space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🟠</span>
+                    <span class="font-bold text-sm text-orange-700">Termómetro Punzón</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">N° Serie / ID</label>
+                        <input type="text" id="punzonSerial" placeholder="Ej: TP-001"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha Calibración</label>
+                        <input type="date" id="punzonCalFecha"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Referencia (°C)</label>
+                        <input type="number" step="0.1" id="punzonTempRef" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Medida (°C)</label>
+                        <input type="number" step="0.1" id="punzonTempMed" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Observaciones</label>
+                    <input type="text" id="punzonObs" placeholder="Ej: Verificado en hielo/agua..."
+                           class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                </div>
+                <div id="punzonDiffRow" class="hidden flex items-center justify-between bg-white rounded-xl px-4 py-2 border border-orange-100">
+                    <span class="text-xs text-gray-500 font-medium">Diferencia:</span>
+                    <span id="punzonDiff" class="font-bold text-sm">—</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Logo footer -->
         <div class="text-center py-6">
             <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
@@ -478,11 +567,13 @@ async function guardarAuditoria() {
 
         showToast('Registro guardado exitosamente', 'success');
 
-        // Compliance notification
+        // Compliance notification (basado en temperatura del pasillo)
         if (detalle.cumple_rango === true) {
-            setTimeout(() => showToast(`✅ Temperatura en cumplimiento (rango: ${detalle.rango_esperado})`, 'success'), 800);
+            const tempRef = tempPasillo || temp;
+            setTimeout(() => showToast(`✅ Pasillo en cumplimiento (${tempRef}°C • rango: ${detalle.rango_esperado})`, 'success'), 800);
         } else if (detalle.cumple_rango === false) {
-            setTimeout(() => showToast(`⚠️ Temperatura fuera de rango (esperado: ${detalle.rango_esperado}, registrado: ${temp}°C)`, 'warning'), 800);
+            const tempRef = tempPasillo || temp;
+            setTimeout(() => showToast(`⚠️ Pasillo fuera de rango (esperado: ${detalle.rango_esperado}, registrado: ${tempRef}°C)`, 'warning'), 800);
         }
     } catch (e) {
         showToast('Error: ' + e.message, 'error');
@@ -498,5 +589,33 @@ function copyAuditId() {
         showToast('ID copiado al portapapeles', 'success');
     }
 }
+
+// ===== Termómetros: cálculo de diferencia en tiempo real =====
+function calcDiff(refId, medId, diffId, rowId, color) {
+    const ref = parseFloat(document.getElementById(refId).value);
+    const med = parseFloat(document.getElementById(medId).value);
+    const row = document.getElementById(rowId);
+    const diffSpan = document.getElementById(diffId);
+
+    if (!isNaN(ref) && !isNaN(med)) {
+        const diff = (med - ref).toFixed(1);
+        const absDiff = Math.abs(diff);
+        diffSpan.textContent = (diff >= 0 ? '+' : '') + diff + '°C';
+        diffSpan.className = 'font-bold text-sm ' + (absDiff <= 1 ? 'text-emerald-600' : 'text-red-600');
+        row.classList.remove('hidden');
+    } else {
+        row.classList.add('hidden');
+    }
+}
+
+['laserTempRef', 'laserTempMed'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () =>
+        calcDiff('laserTempRef', 'laserTempMed', 'laserDiff', 'laserDiffRow', 'blue'));
+});
+
+['punzonTempRef', 'punzonTempMed'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () =>
+        calcDiff('punzonTempRef', 'punzonTempMed', 'punzonDiff', 'punzonDiffRow', 'orange'));
+});
 </script>
 {% endblock %}

@@ -5,6 +5,9 @@ from fastapi.responses import HTMLResponse
 
 import os
 
+# Ruta absoluta al directorio raíz del proyecto
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 from database import Base, engine, SessionLocal
 from models.usuario import Usuario
 from models.sede import Sede
@@ -12,17 +15,17 @@ from models.camara import Camara
 from models.auditoria import Auditoria, AuditoriaDetalle
 from routes import auth, auditoria, historico, dashboard, usuarios, pdf_report
 
-# Create uploads directory
-os.makedirs(os.path.join("static", "uploads"), exist_ok=True)
+# Create uploads directory using absolute path
+os.makedirs(os.path.join(_BASE_DIR, "static", "uploads"), exist_ok=True)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="RANSA - Auditoría de Temperatura", version="1.0.0")
 
-# Static files and templates
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+# Static files and templates (rutas absolutas para compatibilidad con Windows Service)
+app.mount("/static", StaticFiles(directory=os.path.join(_BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(_BASE_DIR, "templates"))
 
 # Include routers
 app.include_router(auth.router)

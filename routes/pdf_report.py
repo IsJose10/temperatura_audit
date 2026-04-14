@@ -1,6 +1,12 @@
 import io
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Zona horaria Colombia (UTC-5)
+COLOMBIA_TZ = timezone(timedelta(hours=-5))
+
+def now_colombia():
+    return datetime.now(COLOMBIA_TZ).replace(tzinfo=None)
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -168,7 +174,7 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
     info_style = ParagraphStyle('Info', parent=styles['Normal'], fontSize=8, fontName='Helvetica')
     info_bold = ParagraphStyle('InfoBold', parent=styles['Normal'], fontSize=8, fontName='Helvetica-Bold')
 
-    fecha = auditoria.fecha or datetime.now()
+    fecha = auditoria.fecha or now_colombia()
     dia = fecha.strftime('%d')
     mes = fecha.strftime('%m')
     anio = fecha.strftime('%Y')
@@ -216,10 +222,15 @@ def _generate_pdf(auditoria, sede, detalles_with_cameras, db):
     ransa_dark = colors.HexColor('#064e3b')
 
     for detalle, camara in detalles_with_cameras:
+        # Usar temperatura_pasillo para verificar cumplimiento; fallback a temperatura de producto
+        temp_para_cumplimiento = (
+            float(detalle.temperatura_pasillo) if detalle.temperatura_pasillo is not None
+            else (float(detalle.temperatura) if detalle.temperatura is not None else 0)
+        )
         cumplimiento = verificar_cumplimiento(
             sede.nombre,
             camara.nombre if camara else "",
-            float(detalle.temperatura) if detalle.temperatura is not None else 0
+            temp_para_cumplimiento
         )
         rango_str = cumplimiento["rango"]
 
@@ -401,7 +412,10 @@ def get_cumplimiento(
         camara = db.query(Camara).filter(Camara.id == d.camara_id).first()
         camara_nombre = camara.nombre if camara else f"Cámara {d.camara_id}"
 
-        if d.temperatura is not None:
+        # Usar temperatura_pasillo para verificar cumplimiento; fallback a temperatura de producto
+        if d.temperatura_pasillo is not None:
+            check = verificar_cumplimiento(sede.nombre, camara_nombre, float(d.temperatura_pasillo))
+        elif d.temperatura is not None:
             check = verificar_cumplimiento(sede.nombre, camara_nombre, float(d.temperatura))
         else:
             check = {"cumple": None, "rango": "No definido", "mensaje": "Sin temperatura registrada"}

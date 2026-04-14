@@ -57,6 +57,17 @@
     </nav>
 </div>
 
+<!-- ===== Lightbox Modal ===== -->
+<div id="imgModal" onclick="closeModal()" style="display:none;"
+     class="fixed inset-0 z-[999] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out">
+    <div class="relative max-w-full max-h-full flex flex-col items-center gap-3" onclick="event.stopPropagation()">
+        <button onclick="closeModal()" class="absolute -top-10 right-0 text-white/70 hover:text-white text-3xl leading-none font-light">✕</button>
+        <img id="modalImg" src="" alt="Evidencia ampliada"
+             class="max-w-[92vw] max-h-[80vh] rounded-2xl object-contain shadow-2xl">
+        <p id="modalCaption" class="text-white/60 text-xs text-center"></p>
+    </div>
+</div>
+
 <input type="hidden" id="auditoriaId" value="{{ auditoria_id }}">
 {% endblock %}
 
@@ -78,22 +89,16 @@ async function loadDetalle() {
     try {
         const audit = await apiGet(`/api/historico/auditorias/${id}`);
 
-        // Show/hide PDF button based on audit state
+        // Show/hide PDF button
         const btnPdf = document.getElementById('btnDownloadPdf');
-        if (audit.estado === 'completada') {
-            btnPdf.style.display = 'flex';
-        } else {
-            btnPdf.style.display = 'none';
-        }
+        btnPdf.style.display = (audit.estado === 'completada') ? 'flex' : 'none';
 
         // Get compliance data
         let cumplimientoMap = {};
         try {
             const cumplData = await apiGet(`/api/auditorias/${id}/cumplimiento`);
             if (cumplData && cumplData.detalles) {
-                cumplData.detalles.forEach(c => {
-                    cumplimientoMap[c.camara_nombre] = c;
-                });
+                cumplData.detalles.forEach(c => { cumplimientoMap[c.camara_nombre] = c; });
             }
         } catch(e) { /* compliance info is optional */ }
 
@@ -107,7 +112,6 @@ async function loadDetalle() {
                         ${audit.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
                     </span>
                 </div>
-
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-ransa-50 rounded-xl p-3 text-center">
                         <div class="text-xl font-extrabold text-ransa-700">${audit.camaras_auditadas}</div>
@@ -118,7 +122,6 @@ async function loadDetalle() {
                         <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Total</div>
                     </div>
                 </div>
-
                 <div class="space-y-2">
                     <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl text-sm text-gray-700">
                         <span>🏢</span> <span class="font-medium">${audit.sede_nombre || '-'}</span>
@@ -135,16 +138,10 @@ async function loadDetalle() {
 
         if (audit.detalles && audit.detalles.length > 0) {
             listContainer.innerHTML = audit.detalles.map((d, i) => {
-                let tempColor = 'text-gray-500';
-                if (d.temperatura !== null) {
-                    if (d.temperatura < 0) tempColor = 'text-blue-600';
-                    else if (d.temperatura > 8) tempColor = 'text-red-600';
-                    else tempColor = 'text-ransa-700';
-                }
-
-                // Compliance badge
                 const cName = d.camara_nombre || ('Cámara ' + d.camara_id);
                 const compl = cumplimientoMap[cName];
+
+                // Compliance badge
                 let complianceBadge = '';
                 if (compl && compl.cumple === true) {
                     complianceBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700" title="Rango: ${compl.rango}">✓ Cumple</span>`;
@@ -152,35 +149,78 @@ async function loadDetalle() {
                     complianceBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-600" title="Rango esperado: ${compl.rango}">✗ Fuera de rango</span>`;
                 }
 
+                // Temp pasillo color (es el valor que se compara con el rango)
+                const tempPasillo = d.temperatura_pasillo;
+                let pasilloColor = 'text-gray-500';
+                if (tempPasillo !== null && tempPasillo !== undefined) {
+                    pasilloColor = tempPasillo < 0 ? 'text-blue-600' : (tempPasillo > 8 ? 'text-red-600' : 'text-ransa-700');
+                }
+
+                // Temp producto color
+                let prodColor = 'text-gray-400';
+                if (d.temperatura !== null && d.temperatura !== undefined) {
+                    prodColor = d.temperatura < 0 ? 'text-blue-500' : (d.temperatura > 8 ? 'text-red-500' : 'text-gray-600');
+                }
+
+                // Evidence photo
+                let fotoHtml = '';
+                if (d.foto_url) {
+                    const safeFotoUrl = d.foto_url.replace(/'/g, "\\'");
+                    const safeCaption = (cName + ' · ' + (d.fecha_registro || '')).replace(/'/g, "\\'");
+                    fotoHtml = `
+                    <div class="mt-3">
+                        <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">📸 Evidencia fotográfica</div>
+                        <div class="rounded-xl overflow-hidden border-2 border-ransa-100 cursor-zoom-in relative group"
+                             onclick="openModal('${safeFotoUrl}', '${safeCaption}')">
+                            <img
+                                src="${d.foto_url}"
+                                alt="Evidencia"
+                                class="w-full block max-h-56 object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                onerror="this.closest('.group').innerHTML='<div class=\\'py-6 text-center text-gray-400 bg-gray-50 rounded-xl\\'>⚠️ <span class=\\'text-xs font-medium\\'>No se pudo cargar la imagen</span></div>'"
+                            >
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center pointer-events-none">
+                                <span class="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 text-white text-xs px-3 py-1.5 rounded-full font-medium">🔍 Toca para ampliar</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
                 return `
                 <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm animate-in" style="animation-delay: ${i * 0.05}s">
+                    <!-- Camera header -->
                     <div class="flex justify-between items-center pb-3 mb-3 border-b border-gray-100">
                         <div class="font-bold text-sm text-ransa-700 flex items-center gap-2">🏪 ${cName}</div>
-                        <div class="flex items-center gap-2">
-                            ${complianceBadge}
-                            <span class="font-extrabold text-lg ${tempColor}">
-                                ${d.temperatura !== null ? d.temperatura + '°C' : 'Sin registro'}
-                            </span>
+                        <div class="flex items-center gap-2">${complianceBadge}</div>
+                    </div>
+
+                    <!-- Temperatures: pasillo (main) and producto -->
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="bg-blue-50 rounded-xl p-2.5 text-center border border-blue-100">
+                            <div class="text-[9px] font-semibold text-blue-400 uppercase tracking-wider mb-0.5">Temp. Pasillo</div>
+                            <div class="font-extrabold text-base ${pasilloColor}">
+                                ${tempPasillo !== null && tempPasillo !== undefined ? tempPasillo + '°C' : '—'}
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-2.5 text-center border border-gray-100">
+                            <div class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Temp. Producto</div>
+                            <div class="font-extrabold text-base ${prodColor}">
+                                ${d.temperatura !== null && d.temperatura !== undefined ? d.temperatura + '°C' : '—'}
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Details -->
                     <div class="space-y-1.5 text-xs text-gray-600">
                         ${d.nombre_producto ? `<div class="flex items-center gap-2">📦 <strong>Producto:</strong> ${d.nombre_producto}</div>` : ''}
-                        ${d.temperatura_pasillo !== null && d.temperatura_pasillo !== undefined ? `<div class="flex items-center gap-2">🌡️ <strong>Temp. Pasillo:</strong> ${d.temperatura_pasillo}°C</div>` : ''}
-                        ${compl && compl.rango ? `<div class="flex items-center gap-2">🎯 <strong>Rango esperado:</strong> ${compl.rango}</div>` : ''}
+                        ${compl && compl.rango ? `<div class="flex items-center gap-2">🎯 <strong>Rango esperado (pasillo):</strong> ${compl.rango}</div>` : ''}
                         ${d.observaciones ? `<div class="flex items-start gap-2 text-gray-400 italic">📝 ${d.observaciones}</div>` : ''}
-
                         <div class="flex justify-between mt-2 pt-2 border-t border-gray-50 text-[10px] text-gray-400">
                             <span>👤 ${d.nombre_auditor || '-'}</span>
                             <span>📅 ${d.fecha_registro || '-'} ${d.hora_registro || ''}</span>
                         </div>
                     </div>
 
-                    ${d.foto_url ? `
-                    <div class="mt-3 rounded-xl overflow-hidden border border-gray-100">
-                        <img src="${d.foto_url}" class="w-full block" alt="Evidencia">
-                    </div>
-                    ` : ''}
+                    ${fotoHtml}
                 </div>
                 `;
             }).join('');
@@ -198,6 +238,23 @@ async function loadDetalle() {
         showToast('Error al cargar detalle', 'error');
     }
 }
+
+// ===== Lightbox =====
+function openModal(src, caption) {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('modalCaption').textContent = caption || '';
+    document.getElementById('imgModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('imgModal').style.display = 'none';
+    document.getElementById('modalImg').src = '';
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.getElementById('imgModal').addEventListener('click', closeModal);
 
 async function downloadPdf() {
     const id = document.getElementById('auditoriaId').value;

@@ -1,9 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import base64
 import os
 import uuid
+
+# Zona horaria Colombia (UTC-5)
+COLOMBIA_TZ = timezone(timedelta(hours=-5))
+
+def now_colombia():
+    return datetime.now(COLOMBIA_TZ).replace(tzinfo=None)
 
 from database import get_db
 from models.auditoria import Auditoria, AuditoriaDetalle
@@ -17,12 +23,15 @@ from config_rangos import verificar_cumplimiento
 
 router = APIRouter(prefix="/api", tags=["Auditorías"])
 
-UPLOAD_DIR = os.path.join("static", "uploads")
+# Ruta absoluta basada en la ubicación del proyecto (evita errores si el servicio
+# corre desde un directorio diferente al del proyecto)
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_DIR = os.path.join(_BASE_DIR, "static", "uploads")
 
 
 def generate_audit_id(sede_codigo: str) -> str:
     """Generate audit ID like AU-MED-120326154228"""
-    now = datetime.now()
+    now = now_colombia()
     timestamp = now.strftime("%d%m%y%H%M%S")
     return f"AU-{sede_codigo}-{timestamp}"
 
@@ -180,7 +189,7 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
     if not camara:
         raise HTTPException(status_code=404, detail="Cámara no encontrada")
 
-    now = datetime.now()
+    now = now_colombia()
 
     # Check if already registered
     existing = db.query(AuditoriaDetalle).filter(
@@ -201,11 +210,12 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
         db.commit()
         db.refresh(existing)
 
-        # Compliance check
+        # Compliance check (se usa temperatura_pasillo para comparar con el rango)
         sede = db.query(Sede).filter(Sede.id == auditoria.sede_id).first()
         cumplimiento = {"cumple": None, "rango": "No definido"}
-        if sede and existing.temperatura is not None:
-            cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(existing.temperatura))
+        temp_para_cumplimiento = existing.temperatura_pasillo if existing.temperatura_pasillo is not None else existing.temperatura
+        if sede and temp_para_cumplimiento is not None:
+            cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(temp_para_cumplimiento))
 
         return AuditoriaDetalleResponse(
             id=existing.id,
@@ -248,11 +258,12 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate, db: Session = D
     db.commit()
     db.refresh(detalle)
 
-    # Compliance check
+    # Compliance check (se usa temperatura_pasillo para comparar con el rango)
     sede = db.query(Sede).filter(Sede.id == auditoria.sede_id).first()
     cumplimiento = {"cumple": None, "rango": "No definido"}
-    if sede and detalle.temperatura is not None:
-        cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(detalle.temperatura))
+    temp_para_cumplimiento = detalle.temperatura_pasillo if detalle.temperatura_pasillo is not None else detalle.temperatura
+    if sede and temp_para_cumplimiento is not None:
+        cumplimiento = verificar_cumplimiento(sede.nombre, camara.nombre, float(temp_para_cumplimiento))
 
     return AuditoriaDetalleResponse(
         id=detalle.id,
