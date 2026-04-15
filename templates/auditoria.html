@@ -167,90 +167,119 @@
         </div>
 
         <!-- ===== Verificación de Termómetros ===== -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4" id="termometrosSection">
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-5" id="termometrosSection">
             <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 <span>🌡️</span> Verificación de Termómetros
             </div>
+            <p class="text-[10px] text-gray-400 -mt-2">Desviación permitida: ±1°C. Se notificará si se excede el límite.</p>
 
             <!-- Termómetro Láser -->
             <div class="rounded-xl border-2 border-blue-100 bg-blue-50/40 p-4 space-y-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 mb-1">
                     <span class="text-xl">🔵</span>
                     <span class="font-bold text-sm text-blue-700">Termómetro Láser</span>
                 </div>
+
+                <!-- Fila 1: Asignado a + Serial ID -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">N° Serie / ID</label>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Asignado a</label>
+                        <input type="text" id="laserAsignadoA" placeholder="Nombre del responsable"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Serial ID</label>
                         <input type="text" id="laserSerial" placeholder="Ej: TL-001"
                                class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha Calibración</label>
-                        <input type="date" id="laserCalFecha"
-                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
-                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Referencia (°C)</label>
-                        <input type="number" step="0.1" id="laserTempRef" placeholder="0.0"
-                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Medida (°C)</label>
-                        <input type="number" step="0.1" id="laserTempMed" placeholder="0.0"
-                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
-                    </div>
-                </div>
+
+                <!-- Fila 2: Marca / Modelo (full width) -->
                 <div>
-                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Observaciones</label>
-                    <input type="text" id="laserObs" placeholder="Ej: Funcionando correctamente..."
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Marca / Modelo</label>
+                    <input type="text" id="laserMarca" placeholder="Ej: Fluke 62 MAX+"
                            class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
                 </div>
-                <div id="laserDiffRow" class="hidden flex items-center justify-between bg-white rounded-xl px-4 py-2 border border-blue-100">
-                    <span class="text-xs text-gray-500 font-medium">Diferencia:</span>
-                    <span id="laserDiff" class="font-bold text-sm">—</span>
+
+                <!-- Fila 3: Temp. Patrón + Lectura verificada -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Patrón (°C)</label>
+                        <input type="number" step="0.1" id="laserTempRef" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Lectura Verificada (°C)</label>
+                        <input type="number" step="0.1" id="laserTempMed" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-blue-200 rounded-xl text-sm font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+
+                <!-- Desviación automática -->
+                <div id="laserDiffRow" class="hidden rounded-xl px-4 py-3 border-2 flex items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-2">
+                        <span id="laserDiffIcon" class="text-base">📊</span>
+                        <div>
+                            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Desviación (±1°C permitido)</div>
+                            <div id="laserDiff" class="font-extrabold text-base">—</div>
+                        </div>
+                    </div>
+                    <span id="laserDiffBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"></span>
                 </div>
             </div>
 
             <!-- Termómetro Punzón -->
             <div class="rounded-xl border-2 border-orange-100 bg-orange-50/40 p-4 space-y-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 mb-1">
                     <span class="text-xl">🟠</span>
                     <span class="font-bold text-sm text-orange-700">Termómetro Punzón</span>
                 </div>
+
+                <!-- Fila 1: Asignado a + Serial ID -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">N° Serie / ID</label>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Asignado a</label>
+                        <input type="text" id="punzonAsignadoA" placeholder="Nombre del responsable"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Serial ID</label>
                         <input type="text" id="punzonSerial" placeholder="Ej: TP-001"
                                class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha Calibración</label>
-                        <input type="date" id="punzonCalFecha"
-                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
-                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Referencia (°C)</label>
-                        <input type="number" step="0.1" id="punzonTempRef" placeholder="0.0"
-                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Medida (°C)</label>
-                        <input type="number" step="0.1" id="punzonTempMed" placeholder="0.0"
-                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
-                    </div>
-                </div>
+
+                <!-- Fila 2: Marca / Modelo (full width) -->
                 <div>
-                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Observaciones</label>
-                    <input type="text" id="punzonObs" placeholder="Ej: Verificado en hielo/agua..."
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Marca / Modelo</label>
+                    <input type="text" id="punzonMarca" placeholder="Ej: Comark C20"
                            class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
                 </div>
-                <div id="punzonDiffRow" class="hidden flex items-center justify-between bg-white rounded-xl px-4 py-2 border border-orange-100">
-                    <span class="text-xs text-gray-500 font-medium">Diferencia:</span>
-                    <span id="punzonDiff" class="font-bold text-sm">—</span>
+
+                <!-- Fila 3: Temp. Patrón + Lectura verificada -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Temp. Patrón (°C)</label>
+                        <input type="number" step="0.1" id="punzonTempRef" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Lectura Verificada (°C)</label>
+                        <input type="number" step="0.1" id="punzonTempMed" placeholder="0.0"
+                               class="w-full px-3 py-2.5 border-2 border-orange-200 rounded-xl text-sm font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all">
+                    </div>
+                </div>
+
+                <!-- Desviación automática -->
+                <div id="punzonDiffRow" class="hidden rounded-xl px-4 py-3 border-2 flex items-center justify-between gap-3 transition-all">
+                    <div class="flex items-center gap-2">
+                        <span id="punzonDiffIcon" class="text-base">📊</span>
+                        <div>
+                            <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Desviación (±1°C permitido)</div>
+                            <div id="punzonDiff" class="font-extrabold text-base">—</div>
+                        </div>
+                    </div>
+                    <span id="punzonDiffBadge" class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide"></span>
                 </div>
             </div>
         </div>
@@ -285,87 +314,66 @@
 
 {% block extra_scripts %}
 <script>
-let currentAudit = null;
-let sedes = [];
-let camaras = [];
-let cameraStream = null;
+// ── Estado global ────────────────────────────────────────────────────────────
+let currentAudit     = null;
+let sedes            = [];
+let camaras          = [];
+let cameraStream     = null;
 let capturedPhotoData = null;
 
+const _el = id => document.getElementById(id);   // acceso rápido al DOM
+
+// ── Inicialización ───────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     requireAuth();
     loadSedes();
-
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    document.getElementById('auditorName').textContent = user.nombre_completo || '-';
-
-    document.getElementById('camaraSelect').addEventListener('change', (e) => {
-        document.getElementById('detailSection').style.display = e.target.value ? 'block' : 'none';
-        if (!e.target.value) {
-            resetDetailFields();
-        }
+    _el('auditorName').textContent = (JSON.parse(localStorage.getItem('user') || '{}')).nombre_completo || '-';
+    _el('camaraSelect').addEventListener('change', e => {
+        _el('detailSection').style.display = e.target.value ? 'block' : 'none';
+        if (!e.target.value) resetDetailFields();
     });
 });
 
 function resetDetailFields() {
-    document.getElementById('productoInput').value = '';
-    document.getElementById('tempInput').value = '';
-    document.getElementById('tempPasilloInput').value = '';
-    document.getElementById('obsInput').value = '';
+    ['productoInput', 'tempInput', 'tempPasilloInput', 'obsInput']
+        .forEach(id => _el(id).value = '');
     removePhoto();
 }
 
+// ── Carga de sedes y cámaras ─────────────────────────────────────────────────
 async function loadSedes() {
     try {
-        const data = await apiGet('/api/sedes');
-        sedes = data;
-        const select = document.getElementById('sedeSelect');
-        select.innerHTML = '<option value="">Seleccionar sede...</option>';
-        data.forEach(s => {
-            select.innerHTML += `<option value="${s.id}">${s.nombre} (${s.regional || 'N/A'})</option>`;
-        });
-    } catch (e) {
-        showToast('Error al cargar sedes', 'error');
-    }
+        sedes = await apiGet('/api/sedes');
+        const sel = _el('sedeSelect');
+        sel.innerHTML = '<option value="">Seleccionar sede...</option>';
+        sedes.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.nombre} (${s.regional || 'N/A'})</option>`);
+    } catch { showToast('Error al cargar sedes', 'error'); }
 }
 
 async function onSedeChange() {
-    const sedeId = document.getElementById('sedeSelect').value;
+    const sedeId = _el('sedeSelect').value;
     if (!sedeId) return;
 
+    // Cargar cámaras de la sede
     try {
-        const data = await apiGet(`/api/sedes/${sedeId}/camaras`);
-        camaras = data;
-        const select = document.getElementById('camaraSelect');
-        select.innerHTML = '<option value="">Seleccionar cámara...</option>';
-        data.forEach(c => {
-            select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-        });
+        camaras = await apiGet(`/api/sedes/${sedeId}/camaras`);
+        const sel = _el('camaraSelect');
+        sel.innerHTML = '<option value="">Seleccionar cámara...</option>';
+        camaras.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+        _el('totalCamaras').textContent = camaras.length;
+    } catch { showToast('Error al cargar cámaras', 'error'); }
 
-        document.getElementById('totalCamaras').textContent = data.length;
-    } catch (e) {
-        showToast('Error al cargar cámaras', 'error');
-    }
-
+    // Cargar auditoría activa si existe
     try {
         const audit = await apiGet(`/api/auditorias/activa?sede_id=${sedeId}`);
-        if (audit) {
-            currentAudit = audit;
-            updateAuditUI(audit);
-        } else {
-            resetAuditUI();
-        }
-    } catch (e) {
-        resetAuditUI();
-    }
+        audit ? (currentAudit = audit, updateAuditUI(audit)) : resetAuditUI();
+    } catch { resetAuditUI(); }
 }
 
+// ── Auditoría: crear / actualizar UI ─────────────────────────────────────────
 async function createNewAudit() {
-    const sedeId = document.getElementById('sedeSelect').value;
-    if (!sedeId) {
-        showToast('Selecciona una sede primero', 'warning');
-        return;
-    }
-
+    const sedeId = _el('sedeSelect').value;
+    if (!sedeId) return showToast('Selecciona una sede primero', 'warning');
     try {
         showLoading(true);
         const audit = await apiPost('/api/auditorias', { sede_id: parseInt(sedeId) });
@@ -374,248 +382,182 @@ async function createNewAudit() {
         showToast('Nueva auditoría creada', 'success');
     } catch (e) {
         showToast('Error al crear auditoría: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
+    } finally { showLoading(false); }
 }
 
 function updateAuditUI(audit) {
-    document.getElementById('auditId').textContent = audit.id_auditoria;
-    document.getElementById('auditadas').textContent = audit.camaras_auditadas;
-    document.getElementById('totalCamaras').textContent = audit.total_camaras;
-    document.getElementById('restantes').textContent = audit.total_camaras - audit.camaras_auditadas;
+    _el('auditId').textContent     = audit.id_auditoria;
+    _el('auditadas').textContent   = audit.camaras_auditadas;
+    _el('totalCamaras').textContent = audit.total_camaras;
+    _el('restantes').textContent   = audit.total_camaras - audit.camaras_auditadas;
 
-    const btnNew = document.getElementById('btnNuevaAuditoria');
-    if (btnNew) {
-        btnNew.disabled = true;
-        btnNew.classList.add('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
-        btnNew.classList.remove('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
+    // Bloquear botón de nueva auditoría
+    const btn = _el('btnNuevaAuditoria');
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
+        btn.classList.remove('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
     }
 
-    const select = document.getElementById('camaraSelect');
-    Array.from(select.options).forEach(opt => {
-        if(opt.value !== "") {
-            opt.disabled = false;
-            opt.text = opt.text.replace(" (Completada)", "");
-        }
-    });
+    // Marcar cámaras ya auditadas como deshabilitadas en el select
+    const sel = _el('camaraSelect');
+    Array.from(sel.options).forEach(o => { if (o.value) { o.disabled = false; o.text = o.text.replace(' (Completada)', ''); } });
 
     const auditors = new Set();
     if (audit.nombre_auditor) auditors.add(audit.nombre_auditor);
+    (audit.detalles || []).forEach(d => {
+        if (d.nombre_auditor) auditors.add(d.nombre_auditor);
+        const opt = sel.querySelector(`option[value="${d.camara_id}"]`);
+        if (opt) { opt.disabled = true; if (!opt.text.includes('(Completada)')) opt.text += ' (Completada)'; }
+    });
 
-    if (audit.detalles && audit.detalles.length > 0) {
-        audit.detalles.forEach(d => {
-            if (d.nombre_auditor) auditors.add(d.nombre_auditor);
-
-            const optionToDisable = select.querySelector(`option[value="${d.camara_id}"]`);
-            if (optionToDisable) {
-                optionToDisable.disabled = true;
-                if (!optionToDisable.text.includes("(Completada)")) {
-                    optionToDisable.text += " (Completada)";
-                }
-            }
-        });
-    }
-
-    if (auditors.size > 0) {
-        document.getElementById('lblAuditorName').textContent = auditors.size > 1 ? "Auditores Participantes" : "Auditor en Curso";
-        document.getElementById('auditorName').textContent = Array.from(auditors).join('\\n');
+    if (auditors.size) {
+        _el('lblAuditorName').textContent = auditors.size > 1 ? 'Auditores Participantes' : 'Auditor en Curso';
+        _el('auditorName').textContent    = [...auditors].join('\n');
     }
 }
 
 function resetAuditUI() {
-    document.getElementById('auditId').textContent = '-';
-    document.getElementById('auditadas').textContent = '0';
-    document.getElementById('restantes').textContent = '0';
+    ['auditadas', 'restantes'].forEach(id => _el(id).textContent = '0');
+    _el('auditId').textContent = '-';
     currentAudit = null;
 
-    const select = document.getElementById('camaraSelect');
-    if (select) {
-        Array.from(select.options).forEach(opt => {
-            if(opt.value !== "") {
-                opt.disabled = false;
-                opt.text = opt.text.replace(" (Completada)", "");
-            }
-        });
-    }
-    
-    const btnNew = document.getElementById('btnNuevaAuditoria');
-    if (btnNew) {
-        btnNew.disabled = false;
-        btnNew.classList.remove('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
-        btnNew.classList.add('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
-    }
+    const sel = _el('camaraSelect');
+    if (sel) Array.from(sel.options).forEach(o => { if (o.value) { o.disabled = false; o.text = o.text.replace(' (Completada)', ''); } });
 
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const lbl = document.getElementById('lblAuditorName');
-    if (lbl) lbl.textContent = "Auditor en Curso";
-    const nameSpan = document.getElementById('auditorName');
-    if (nameSpan) nameSpan.textContent = user.nombre_completo || '-';
+    const btn = _el('btnNuevaAuditoria');
+    if (btn) {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed', 'hover:shadow-none', 'hover:-translate-y-0');
+        btn.classList.add('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
+    }
+    _el('lblAuditorName').textContent = 'Auditor en Curso';
+    _el('auditorName').textContent    = (JSON.parse(localStorage.getItem('user') || '{}')).nombre_completo || '-';
 }
 
+// ── Cámara fotográfica ────────────────────────────────────────────────────────
 async function openCamera() {
     try {
-        const constraints = {
-            video: {
-                facingMode: { ideal: 'environment' },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-        };
-        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-        const video = document.getElementById('cameraPreview');
-        video.srcObject = cameraStream;
-
-        document.getElementById('cameraContainer').style.display = 'block';
-        document.getElementById('btnOpenCamera').style.display = 'none';
-        document.getElementById('photoPreview').style.display = 'none';
-    } catch (err) {
-        showToast('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
-    }
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        _el('cameraPreview').srcObject = cameraStream;
+        _el('cameraContainer').style.display = 'block';
+        _el('btnOpenCamera').style.display   = 'none';
+        _el('photoPreview').style.display    = 'none';
+    } catch { showToast('No se pudo acceder a la cámara. Verifica los permisos.', 'error'); }
 }
 
 function takePhoto() {
-    const video = document.getElementById('cameraPreview');
-    const canvas = document.getElementById('photoCanvas');
-
-    canvas.width = video.videoWidth;
+    const video = _el('cameraPreview'), canvas = _el('photoCanvas');
+    canvas.width  = video.videoWidth;
     canvas.height = video.videoHeight;
-
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
-
+    canvas.getContext('2d').drawImage(video, 0, 0);
     capturedPhotoData = canvas.toDataURL('image/jpeg', 0.8);
-
-    document.getElementById('capturedPhoto').src = capturedPhotoData;
-    document.getElementById('photoPreview').style.display = 'block';
-
+    _el('capturedPhoto').src              = capturedPhotoData;
+    _el('photoPreview').style.display     = 'block';
     stopCamera();
 }
 
 function stopCamera() {
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-    }
-    document.getElementById('cameraContainer').style.display = 'none';
-
-    if (!capturedPhotoData) {
-        document.getElementById('btnOpenCamera').style.display = 'block';
-    }
+    cameraStream?.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+    _el('cameraContainer').style.display = 'none';
+    if (!capturedPhotoData) _el('btnOpenCamera').style.display = 'block';
 }
 
-function retakePhoto() {
-    capturedPhotoData = null;
-    document.getElementById('photoPreview').style.display = 'none';
-    openCamera();
-}
+function retakePhoto()  { capturedPhotoData = null; _el('photoPreview').style.display = 'none'; openCamera(); }
+function removePhoto()  { capturedPhotoData = null; _el('photoPreview').style.display = 'none'; _el('btnOpenCamera').style.display = 'block'; stopCamera(); }
 
-function removePhoto() {
-    capturedPhotoData = null;
-    document.getElementById('photoPreview').style.display = 'none';
-    document.getElementById('btnOpenCamera').style.display = 'block';
-    stopCamera();
-}
-
+// ── Guardar registro de cámara ───────────────────────────────────────────────
 async function guardarAuditoria() {
-    if (!currentAudit) {
-        showToast('Crea una auditoría primero con el botón +', 'warning');
-        return;
-    }
+    if (!currentAudit)                       return showToast('Crea una auditoría primero con el botón +', 'warning');
+    const camaraId = _el('camaraSelect').value;
+    if (!camaraId)                           return showToast('Selecciona una cámara', 'warning');
 
-    const camaraId = document.getElementById('camaraSelect').value;
-    if (!camaraId) {
-        showToast('Selecciona una cámara', 'warning');
-        return;
-    }
-
-    const producto = document.getElementById('productoInput').value;
-    const temp = document.getElementById('tempInput').value;
-    const tempPasillo = document.getElementById('tempPasilloInput').value;
-    const obs = document.getElementById('obsInput').value;
+    const temp       = _el('tempInput').value;
+    const tempPasillo= _el('tempPasilloInput').value;
 
     try {
         showLoading(true);
-
+        // Subir foto si fue capturada
         let fotoUrl = null;
         if (capturedPhotoData) {
-            const uploadResult = await apiPost('/api/auditorias/upload-foto', {
-                image: capturedPhotoData
-            });
-            fotoUrl = uploadResult.foto_url;
+            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotoData });
+            fotoUrl = r.foto_url;
         }
 
         const detalle = await apiPost(`/api/auditorias/${currentAudit.id}/detalle`, {
-            camara_id: parseInt(camaraId),
-            nombre_producto: producto || null,
-            temperatura: temp ? parseFloat(temp) : null,
+            camara_id:           parseInt(camaraId),
+            nombre_producto:     _el('productoInput').value   || null,
+            temperatura:         temp       ? parseFloat(temp)       : null,
             temperatura_pasillo: tempPasillo ? parseFloat(tempPasillo) : null,
-            observaciones: obs || null,
-            foto_url: fotoUrl
+            observaciones:       _el('obsInput').value        || null,
+            foto_url:            fotoUrl,
         });
 
         currentAudit.camaras_auditadas++;
-
         if (!currentAudit.detalles) currentAudit.detalles = [];
         currentAudit.detalles.push(detalle);
-
         updateAuditUI(currentAudit);
-
         resetDetailFields();
-        document.getElementById('camaraSelect').value = '';
-        document.getElementById('detailSection').style.display = 'none';
-
+        _el('camaraSelect').value             = '';
+        _el('detailSection').style.display    = 'none';
         showToast('Registro guardado exitosamente', 'success');
 
-        // Compliance notification (basado en temperatura del pasillo)
-        if (detalle.cumple_rango === true) {
-            const tempRef = tempPasillo || temp;
-            setTimeout(() => showToast(`✅ Pasillo en cumplimiento (${tempRef}°C • rango: ${detalle.rango_esperado})`, 'success'), 800);
-        } else if (detalle.cumple_rango === false) {
-            const tempRef = tempPasillo || temp;
-            setTimeout(() => showToast(`⚠️ Pasillo fuera de rango (esperado: ${detalle.rango_esperado}, registrado: ${tempRef}°C)`, 'warning'), 800);
-        }
+        // Notificación de cumplimiento (basada en temperatura del pasillo)
+        const ref = tempPasillo || temp;
+        if (detalle.cumple_rango === true)
+            setTimeout(() => showToast(`✅ Pasillo en cumplimiento (${ref}°C · rango: ${detalle.rango_esperado})`, 'success'), 800);
+        else if (detalle.cumple_rango === false)
+            setTimeout(() => showToast(`⚠️ Pasillo fuera de rango (esperado: ${detalle.rango_esperado}, registrado: ${ref}°C)`, 'warning'), 800);
     } catch (e) {
         showToast('Error: ' + e.message, 'error');
-    } finally {
-        showLoading(false);
-    }
+    } finally { showLoading(false); }
 }
 
 function copyAuditId() {
-    const id = document.getElementById('auditId').textContent;
-    if (id && id !== '-') {
-        navigator.clipboard.writeText(id);
-        showToast('ID copiado al portapapeles', 'success');
-    }
+    const id = _el('auditId').textContent;
+    if (id && id !== '-') { navigator.clipboard.writeText(id); showToast('ID copiado al portapapeles', 'success'); }
 }
 
-// ===== Termómetros: cálculo de diferencia en tiempo real =====
-function calcDiff(refId, medId, diffId, rowId, color) {
-    const ref = parseFloat(document.getElementById(refId).value);
-    const med = parseFloat(document.getElementById(medId).value);
-    const row = document.getElementById(rowId);
-    const diffSpan = document.getElementById(diffId);
+// ── Verificación de termómetros ───────────────────────────────────────────────
+// Calcula la desviación en tiempo real; si supera ±1°C lanza alerta toast (una vez).
+const _termAlerted = { laser: false, punzon: false };
 
-    if (!isNaN(ref) && !isNaN(med)) {
-        const diff = (med - ref).toFixed(1);
-        const absDiff = Math.abs(diff);
-        diffSpan.textContent = (diff >= 0 ? '+' : '') + diff + '°C';
-        diffSpan.className = 'font-bold text-sm ' + (absDiff <= 1 ? 'text-emerald-600' : 'text-red-600');
-        row.classList.remove('hidden');
-    } else {
-        row.classList.add('hidden');
+function calcDiff(tipo, refId, medId, diffId, rowId, iconId, badgeId) {
+    const ref = parseFloat(_el(refId).value);
+    const med = parseFloat(_el(medId).value);
+    const row = _el(rowId), diffEl = _el(diffId), icon = _el(iconId), badge = _el(badgeId);
+
+    if (isNaN(ref) || isNaN(med)) { row.classList.add('hidden'); return; }
+
+    const diff    = parseFloat((med - ref).toFixed(1));
+    const ok      = Math.abs(diff) <= 1;
+    const sign    = diff >= 0 ? '+' : '';
+    const label   = tipo === 'laser' ? 'Láser' : 'Punzón';
+
+    diffEl.textContent = `${sign}${diff}°C`;
+    diffEl.className   = `font-extrabold text-base ${ok ? 'text-emerald-600' : 'text-red-600'}`;
+    icon.textContent   = ok ? '✅' : '⚠️';
+    row.style.borderColor = ok ? '#6ee7b7' : '#fca5a5';
+    row.style.background  = ok ? '#f0fdf4' : '#fff1f2';
+    badge.textContent  = ok ? 'OK' : 'FUERA DE LÍMITE';
+    badge.className    = `text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+    row.classList.remove('hidden');
+
+    if (!ok && !_termAlerted[tipo]) {
+        _termAlerted[tipo] = true;
+        setTimeout(() => showToast(`⚠️ Termómetro ${label}: desviación ${sign}${diff}°C supera ±1°C permitido`, 'warning'), 300);
     }
+    if (ok) _termAlerted[tipo] = false;
 }
 
-['laserTempRef', 'laserTempMed'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () =>
-        calcDiff('laserTempRef', 'laserTempMed', 'laserDiff', 'laserDiffRow', 'blue'));
-});
-
-['punzonTempRef', 'punzonTempMed'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () =>
-        calcDiff('punzonTempRef', 'punzonTempMed', 'punzonDiff', 'punzonDiffRow', 'orange'));
+// Listeners para los inputs de cada termómetro
+[['laser',  'laserTempRef',  'laserTempMed',  'laserDiff',  'laserDiffRow',  'laserDiffIcon',  'laserDiffBadge'],
+ ['punzon', 'punzonTempRef', 'punzonTempMed', 'punzonDiff', 'punzonDiffRow', 'punzonDiffIcon', 'punzonDiffBadge']]
+.forEach(([tipo, ref, med, diff, row, icon, badge]) => {
+    [ref, med].forEach(id => _el(id).addEventListener('input', () => calcDiff(tipo, ref, med, diff, row, icon, badge)));
 });
 </script>
 {% endblock %}
