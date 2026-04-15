@@ -116,7 +116,7 @@ def _main_data_table(detalles_with_cameras, sede):
                       alignment=TA_CENTER, leading=9, textColor=colors.white)
 
     cols    = ['Cámara', 'Rango\nEsperado', 'Temp\nProducto °C', 'Temp\nPasillo °C',
-               'Hora', 'Producto', 'Observaciones', 'Tablero', 'Temp.\nManual']
+               'Hora', 'Producto', 'Observaciones']
     data    = [[Paragraph(h.replace('\n', '<br/>'), header_s) for h in cols]]
 
     for d, cam in detalles_with_cameras:
@@ -131,14 +131,13 @@ def _main_data_table(detalles_with_cameras, sede):
             Paragraph(d.hora_registro.strftime('%H:%M')       if d.hora_registro      else '',             cell_s),
             Paragraph(d.nombre_producto or '', cell_s),
             Paragraph(d.observaciones   or '', cell_s),
-            '', '',  # Tablero y Temp. Manual (llenado manual)
         ])
 
     # Rellena hasta 9 filas para aspecto consistente
     while len(data) < 10:
-        data.append([''] * 9)
+        data.append([''] * 7)
 
-    widths = [1.4, 0.8, 0.7, 0.7, 0.5, 1.1, 1.7, 0.85, 0.75]
+    widths = [1.4, 0.8, 0.7, 0.7, 0.5, 1.1, 3.3]
     t = Table(data, colWidths=[w*inch for w in widths], repeatRows=1)
     cmds = [
         ('BACKGROUND',  (0, 0), (-1,  0), _DARK),
