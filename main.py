@@ -83,6 +83,7 @@ def seed_data():
             ("Fontibón", "FON", "Centro"),
             ("Pereira", "PER", "Eje Cafetero"),
             ("Funza", "FNZ", "Centro"),
+            ("Caldas", "CLD", "Medellin"),
         ]
         sedes = []
         for nombre, codigo, regional in sedes_data:
@@ -151,6 +152,7 @@ def seed_data():
                 ("Cámara de congelado 2", "Congelada"),
                 ("Cámara de congelado 3", "Congelada"),
             ],
+            "CLD": [],
         }
 
         camaras_default = [

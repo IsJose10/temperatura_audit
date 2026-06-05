@@ -62,6 +62,9 @@ RANGOS_TEMPERATURA = {
         "Precava Congelado":       (None, -10),  # <= -10°C
         "Bahía":                   (None, 16),    # <= 16°C
     },
+    "Caldas": {
+        # Cámaras por confirmar
+    },
 }
 
 
