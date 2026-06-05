@@ -152,7 +152,15 @@ def seed_data():
                 ("Cámara de congelado 2", "Congelada"),
                 ("Cámara de congelado 3", "Congelada"),
             ],
-            "CLD": [],
+            "CLD": [
+                ("PRECAVA DE CONGELADO", "Congelada"),
+                ("PRECAV DE REFRIGERADO", "Refrigerada"),
+                ("CONVER 1", "Congelada"),
+                ("CONGELADOS 2", "Congelada"),
+                ("CONGELADOS 1", "Congelada"),
+                ("CONVER 2", "Refrigerada"),
+                ("FRISBY REFRIGERADO", "Refrigerada"),
+            ],
         }
 
         camaras_default = [

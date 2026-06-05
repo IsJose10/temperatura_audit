@@ -63,7 +63,13 @@ RANGOS_TEMPERATURA = {
         "Bahía":                   (None, 16),    # <= 16°C
     },
     "Caldas": {
-        # Cámaras por confirmar
+        "PRECAVA DE CONGELADO":   (-21, -18),
+        "PRECAV DE REFRIGERADO":  (0, 4),
+        "CONVER 1":               (-21, -18),
+        "CONGELADOS 2":           (-21, -18),
+        "CONGELADOS 1":           (-21, -18),
+        "CONVER 2":               (0, 4),
+        "FRISBY REFRIGERADO":     (0, 4),
     },
 }
 
