@@ -65,7 +65,7 @@ def _build_detalle_response(d, camara, cumpl: dict) -> AuditoriaDetalleResponse:
 
 def _assert_regional(current_user, sede):
     """Lanza 403 si un auditor intenta acceder a una regional distinta a la suya."""
-    if current_user.rol == "auditor" and current_user.regional:
+    if current_user.rol != "administrador" and current_user.regional:
         if sede and sede.regional != current_user.regional:
             raise HTTPException(403, "No tienes acceso a esta regional")
 
@@ -77,7 +77,7 @@ def get_sedes(db: Session = Depends(get_db),
               current_user: Usuario = Depends(get_current_user)):
     """Lista sedes activas. Los auditores solo ven las de su regional."""
     q = db.query(Sede).filter(Sede.activo == True)
-    if current_user.rol == "auditor" and current_user.regional:
+    if current_user.rol != "administrador" and current_user.regional:
         q = q.filter(Sede.regional == current_user.regional)
     return [SedeResponse.model_validate(s) for s in q.all()]
 
