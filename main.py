@@ -13,7 +13,8 @@ from models.usuario import Usuario
 from models.sede import Sede
 from models.camara import Camara
 from models.auditoria import Auditoria, AuditoriaDetalle
-from routes import auth, auditoria, historico, dashboard, usuarios, pdf_report
+from models.verificacion_termometro import VerificacionTermometro, VerificacionTermometroDetalle
+from routes import auth, auditoria, historico, dashboard, usuarios, pdf_report, verificacion_termometro
 
 # Create uploads directory using absolute path
 os.makedirs(os.path.join(_BASE_DIR, "static", "uploads"), exist_ok=True)
@@ -34,6 +35,7 @@ app.include_router(historico.router)
 app.include_router(dashboard.router)
 app.include_router(usuarios.router)
 app.include_router(pdf_report.router)
+app.include_router(verificacion_termometro.router)
 
 
 def seed_data():
@@ -125,6 +127,7 @@ def seed_data():
                 ("Pre Refrig.", "Refrigerada"),
                 ("Pre Cong.1", "Congelada"),
                 ("Bahía OPL", "Refrigerada"),
+                ("Maquila", "Refrigerada"),
             ],
             "PER": [
                 ("Contenedor #1", "Congelada"),
@@ -219,6 +222,16 @@ async def historico_page(request: Request):
 @app.get("/historico/detalle/{id}", response_class=HTMLResponse)
 async def detalle_auditoria_page(request: Request, id: int):
     return templates.TemplateResponse("detalle_auditoria.html", {"request": request, "auditoria_id": id})
+
+
+@app.get("/verificacion_termometros", response_class=HTMLResponse)
+async def verificacion_termometros_page(request: Request):
+    return templates.TemplateResponse("verificacion_termometros.html", {"request": request})
+
+
+@app.get("/verificacion_termometros/detalle/{id}", response_class=HTMLResponse)
+async def detalle_verificacion_page(request: Request, id: int):
+    return templates.TemplateResponse("detalle_verificacion.html", {"request": request, "verificacion_id": id})
 
 
 @app.get("/dashboard", response_class=HTMLResponse)

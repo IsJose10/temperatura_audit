@@ -24,6 +24,7 @@ RANGOS_TEMPERATURA = {
         "Pre Refrig.":          (0, 6),
         "Pre Cong.1":           (-16, -12),
         "Bahía OPL":            (8, 14),
+        "Maquila":              (0, 4),  # ponytail: camera added as requested
     },
     "Pereira": {
         "Contenedor #1":        (None, -18),  # <= -18°C

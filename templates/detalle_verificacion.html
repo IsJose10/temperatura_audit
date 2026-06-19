@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Detalle de Calibración{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3 flex-1">
+            <button onclick="window.history.back()" class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg hover:bg-white/25 transition-all cursor-pointer">⬅️</button>
+            <span class="font-bold text-base tracking-wide">DETALLE CALIBRACIÓN</span>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="loadDetalle()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Refrescar">🔄</button>
+            <button onclick="downloadPdf()" class="h-9 px-3 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center gap-1.5 transition-all duration-200 text-xs font-semibold text-white" title="Descargar PDF">
+                📄 PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-5 py-5 pb-24 space-y-5">
+        <!-- Overview Card -->
+        <div id="overviewContainer">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Thermometers list -->
+        <h3 class="text-sm font-bold text-ransa-700 flex items-center gap-2">🌡️ Termómetros Verificados</h3>
+        <div id="thermometersList" class="space-y-4">
+            <!-- Loaded dynamically -->
+        </div>
+
+        <!-- Corrective Actions & Observations -->
+        <div id="actionsContainer" style="display:none;" class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+            <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">ACCIONES EN CASO DE DESVIACIÓN</h3>
+                <div class="space-y-2 text-xs font-medium text-gray-700">
+                    <div class="flex items-center gap-2">
+                        <span id="actReajuste">⬜</span> <span>Reajuste de termómetro verificado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="actMantenimiento">⬜</span> <span>Envío a mantenimiento y calibración externa</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="actReemplazo">⬜</span> <span>Reemplazo del equipo</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="actNoAplica">⬜</span> <span>No aplican acciones por desviación</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-gray-50">
+
+            <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">OBSERVACIONES ESPECÍFICAS</h3>
+                <p id="obsText" class="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-100 italic"></p>
+            </div>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="text-center py-6">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/verificacion_termometros">
+            <span class="nav-icon">🌡️</span>
+            Termómetros
+        </a>
+        <a href="/historico" class="active">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+
+<input type="hidden" id="verificacionId" value="{{ verificacion_id }}">
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ponytail: detail page implementation
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    loadDetalle();
+});
+
+async function loadDetalle() {
+    const id = document.getElementById('verificacionId').value;
+    const overview = document.getElementById('overviewContainer');
+    const list = document.getElementById('thermometersList');
+    const actionsBlock = document.getElementById('actionsContainer');
+    
+    overview.innerHTML = '<div class="spinner"></div>';
+    list.innerHTML = '';
+    
+    try {
+        const data = await apiGet(`/api/verificaciones/${id}`);
+        
+        overview.innerHTML = `
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        🏷️ ${data.codigo}
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-ransa-50 text-ransa-700">
+                        📄 FR-CAL-037
+                    </span>
+                </div>
+                <div class="space-y-2.5 text-sm text-gray-700">
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl">
+                        <span class="w-5 text-center">🏢</span> <span class="font-medium">${data.sede_nombre || '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl">
+                        <span class="w-5 text-center">📅</span> <span class="font-medium">${formatDate(data.fecha)}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl">
+                        <span class="w-5 text-center">⚙️</span> <span class="font-medium">${data.equipo || 'Termómetros'}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl">
+                        <span class="w-5 text-center">🎯</span> <span class="font-medium">Patrón: ${data.serial_patron || '-'}</span>
+                    </div>
+                    <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 rounded-xl">
+                        <span class="w-5 text-center">👤</span> <span class="font-medium">Aprobado por: ${data.revisado_por || '-'}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Group details by thermometer
+        const therms = {};
+        data.detalles.forEach(d => {
+            const key = `${d.asignado_a || ''}_${d.serial_id || ''}_${d.marca_modelo || ''}`;
+            if (!therms[key]) {
+                therms[key] = {
+                    asignado_a: d.asignado_a,
+                    serial_id: d.serial_id,
+                    marca_modelo: d.marca_modelo,
+                    firma_realiza: d.firma_realiza,
+                    points: []
+                };
+            }
+            therms[key].points.push(d);
+        });
+
+        // Render thermometer cards
+        list.innerHTML = Object.values(therms).map((t, idx) => {
+            const isApproved = t.points.every(p => p.aprobado);
+            
+            const pointsHtml = t.points.map(p => {
+                const corrStr = p.correccion !== null ? (p.correccion >= 0 ? '+' : '') + p.correccion.toFixed(2) + '°C' : '—';
+                const corrColor = p.aprobado ? 'text-emerald-600' : 'text-red-600';
+                const statusLabel = p.aprobado ? 'Aprobado' : 'Rechazado';
+                const statusColor = p.aprobado ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600';
+                
+                return `
+                    <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-100 flex flex-col gap-1 text-xs">
+                        <div class="flex justify-between items-center font-bold text-gray-500 mb-1">
+                            <span>${p.valor_objetivo === -18 ? '❄️ Congelado (-18°C)' : '🥦 Refrigeración (0°C)'}</span>
+                            <span class="px-2 py-0.5 rounded text-[9px] uppercase tracking-wider ${statusColor}">${statusLabel}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 text-center text-[10px]">
+                            <div>
+                                <span class="block text-gray-400 uppercase">Medido</span>
+                                <span class="font-bold text-gray-700">${p.lectura_verificado !== null ? p.lectura_verificado.toFixed(1) + '°C' : '—'}</span>
+                            </div>
+                            <div>
+                                <span class="block text-gray-400 uppercase">Patrón</span>
+                                <span class="font-bold text-gray-700">${p.lectura_patron !== null ? p.lectura_patron.toFixed(1) + '°C' : '—'}</span>
+                            </div>
+                            <div>
+                                <span class="block text-gray-400 uppercase">Corrección</span>
+                                <span class="font-bold ${corrColor}">${corrStr}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('<div class="h-2"></div>');
+
+            return `
+                <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center pb-2.5 border-b border-gray-50">
+                        <div>
+                            <div class="font-bold text-sm text-ransa-700">🏪 ${t.serial_id || 'S/N'}</div>
+                            <div class="text-[10px] text-gray-400 font-semibold">${t.marca_modelo || '-'} · Asignado a: ${t.asignado_a || '-'}</div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-bold ${isApproved ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${isApproved ? '✅ APROBADO' : '⚠️ RECHAZADO'}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        ${pointsHtml}
+                    </div>
+
+                    <div class="text-[10px] text-gray-400 flex justify-between items-center pt-1">
+                        <span>Firma: ${t.firma_realiza || '-'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Action Checkboxes
+        document.getElementById('actReajuste').textContent = data.accion_reajuste ? '☑️' : '⬜';
+        document.getElementById('actMantenimiento').textContent = data.accion_mantenimiento ? '☑️' : '⬜';
+        document.getElementById('actReemplazo').textContent = data.accion_reemplazo ? '☑️' : '⬜';
+        document.getElementById('actNoAplica').textContent = data.accion_no_aplica ? '☑️' : '⬜';
+        
+        document.getElementById('obsText').textContent = data.observaciones || 'Sin observaciones.';
+        actionsBlock.style.display = 'block';
+
+    } catch (e) {
+        overview.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm font-medium">Error al cargar detalle: ${e.message}</div></div>`;
+        showToast('Error al cargar detalle', 'error');
+    }
+}
+
+async function downloadPdf() {
+    const id = document.getElementById('verificacionId').value;
+    const token = localStorage.getItem('token');
+    try {
+        showLoading(true);
+        const response = await fetch(`/api/verificaciones/${id}/pdf`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Error al generar PDF');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `FR-CAL-037_Calibracion_${id}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        showToast('PDF descargado exitosamente', 'success');
+    } catch (e) {
+        showToast('Error al descargar PDF: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    // dateStr comes as YYYY-MM-DD
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1]-1, parts[2]);
+        return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    return dateStr;
+}
+</script>
+{% endblock %}

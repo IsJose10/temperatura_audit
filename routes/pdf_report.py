@@ -42,6 +42,11 @@ _STRIPE = colors.HexColor('#f8faf8')
 def now_col():
     return datetime.now(_COL_TZ).replace(tzinfo=None)
 
+def _sanitize_filename(name: str) -> str:
+    import unicodedata
+    normalized = unicodedata.normalize('NFKD', name)
+    return "".join(c for c in normalized if not unicodedata.combining(c))
+
 def _style(name, **kw):
     """Crea un ParagraphStyle rápido a partir del estilo Normal."""
     base = getSampleStyleSheet()['Normal']
@@ -249,7 +254,8 @@ def download_pdf(auditoria_id: int, db: Session = Depends(get_db),
              for d in detalles]
 
     buf      = _generate_pdf(audit, sede, pairs, db)
-    filename = f"FR-CAL-032_{sede.nombre}_{audit.id_auditoria}.pdf"
+    safe_sede_nombre = _sanitize_filename(sede.nombre)
+    filename = f"FR-CAL-032_{safe_sede_nombre}_{audit.id_auditoria}.pdf"
     return StreamingResponse(buf, media_type="application/pdf",
                              headers={"Content-Disposition": f'attachment; filename="{filename}"'})
 

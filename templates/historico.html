@@ -16,6 +16,16 @@
 
     <!-- Content -->
     <div class="px-5 py-5 pb-24 space-y-4">
+        <!-- Tabs -->
+        <div class="flex border border-gray-100 bg-white rounded-2xl p-1 shadow-sm gap-1">
+            <button onclick="switchTab('cameras')" id="tabCameras" class="flex-1 py-3 text-center text-xs font-bold text-ransa-700 bg-ransa-50 rounded-xl transition-all flex items-center justify-center gap-1.5">
+                📹 Cámaras (FR-CAL-032)
+            </button>
+            <button onclick="switchTab('thermometers')" id="tabThermometers" class="flex-1 py-3 text-center text-xs font-bold text-gray-500 hover:text-ransa-600 rounded-xl transition-all flex items-center justify-center gap-1.5">
+                🌡️ Termómetros (FR-CAL-037)
+            </button>
+        </div>
+
         <!-- Filters -->
         <div class="flex gap-3">
             <select id="filterSede" onchange="loadHistorico()"
@@ -24,13 +34,13 @@
             </select>
             <select id="filterEstado" onchange="loadHistorico()"
                     class="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all">
-                <option value="">Todos</option>
+                <option value="">Todos los estados</option>
                 <option value="completada">Completadas</option>
                 <option value="en_progreso">En Progreso</option>
             </select>
         </div>
 
-        <!-- Audit list -->
+        <!-- Audit/Verification list -->
         <div id="historicoList">
             <div class="spinner"></div>
         </div>
@@ -46,6 +56,10 @@
         <a href="/auditoria">
             <span class="nav-icon">📋</span>
             Auditoría
+        </a>
+        <a href="/verificacion_termometros">
+            <span class="nav-icon">🌡️</span>
+            Termómetros
         </a>
         <a href="/historico" class="active">
             <span class="nav-icon">📚</span>
@@ -67,11 +81,47 @@
 
 {% block extra_scripts %}
 <script>
+let activeTab = 'cameras';
+
 document.addEventListener('DOMContentLoaded', () => {
     requireAuth();
     loadSedesFilter();
-    loadHistorico();
+    
+    // Check URL query parameters for active tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'termometros') {
+        switchTab('thermometers');
+    } else {
+        loadHistorico();
+    }
 });
+
+function switchTab(tab) {
+    activeTab = tab;
+    const tabCameras = document.getElementById('tabCameras');
+    const tabTherms = document.getElementById('tabThermometers');
+    const filterEstado = document.getElementById('filterEstado');
+
+    if (tab === 'cameras') {
+        tabCameras.classList.add('bg-ransa-50', 'text-ransa-700');
+        tabCameras.classList.remove('text-gray-500', 'hover:text-ransa-600');
+        
+        tabTherms.classList.remove('bg-ransa-50', 'text-ransa-700');
+        tabTherms.classList.add('text-gray-500', 'hover:text-ransa-600');
+        
+        if (filterEstado) filterEstado.classList.remove('hidden');
+    } else {
+        tabTherms.classList.add('bg-ransa-50', 'text-ransa-700');
+        tabTherms.classList.remove('text-gray-500', 'hover:text-ransa-600');
+        
+        tabCameras.classList.remove('bg-ransa-50', 'text-ransa-700');
+        tabCameras.classList.add('text-gray-500', 'hover:text-ransa-600');
+        
+        if (filterEstado) filterEstado.classList.add('hidden');
+    }
+    loadHistorico();
+}
 
 async function loadSedesFilter() {
     try {
@@ -88,51 +138,105 @@ async function loadHistorico() {
     container.innerHTML = '<div class="spinner"></div>';
 
     const sedeId = document.getElementById('filterSede').value;
-    const estado = document.getElementById('filterEstado').value;
+    
+    if (activeTab === 'cameras') {
+        const estado = document.getElementById('filterEstado').value;
+        let url = '/api/historico/auditorias?limit=50';
+        if (sedeId) url += `&sede_id=${sedeId}`;
+        if (estado) url += `&estado=${estado}`;
 
-    let url = '/api/historico/auditorias?limit=50';
-    if (sedeId) url += `&sede_id=${sedeId}`;
-    if (estado) url += `&estado=${estado}`;
+        try {
+            const auditorias = await apiGet(url);
+            if (auditorias.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-gray-400">
+                        <div class="text-5xl mb-3 opacity-50">📭</div>
+                        <div class="text-sm font-medium">No se encontraron auditorías de cámaras</div>
+                    </div>
+                `;
+                return;
+            }
 
-    try {
-        const auditorias = await apiGet(url);
-
-        if (auditorias.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-16 text-gray-400">
-                    <div class="text-5xl mb-3 opacity-50">📭</div>
-                    <div class="text-sm font-medium">No se encontraron auditorías</div>
+            container.innerHTML = auditorias.map((a, i) => `
+                <div class="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300 cursor-pointer animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/historico/detalle/${a.id}'">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="font-bold text-sm text-ransa-700">${a.id_auditoria}</div>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${a.estado === 'completada' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
+                            ${a.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+                        <span class="flex items-center gap-1">🏢 ${a.sede_nombre || '-'}</span>
+                        <span class="flex items-center gap-1">👤 ${a.auditor_nombre || '-'}</span>
+                        <span class="flex items-center gap-1">📅 ${formatDateTime(a.fecha)}</span>
+                        <span class="flex items-center gap-1">📊 ${a.camaras_auditadas}/${a.total_camaras}</span>
+                    </div>
                 </div>
-            `;
-            return;
+            `).join('');
+        } catch (e) {
+            container.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm font-medium">Error al cargar histórico</div></div>`;
+            showToast('Error al cargar histórico', 'error');
         }
+    } else {
+        let url = '/api/verificaciones/historico?limit=50';
+        if (sedeId) url += `&sede_id=${sedeId}`;
 
-        container.innerHTML = auditorias.map((a, i) => `
-            <div class="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300 cursor-pointer animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/historico/detalle/${a.id}'">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="font-bold text-sm text-ransa-700">${a.id_auditoria}</div>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${a.estado === 'completada' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
-                        ${a.estado === 'completada' ? '✅ Completada' : '⏳ En Progreso'}
-                    </span>
-                </div>
-                <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
-                    <span class="flex items-center gap-1">🏢 ${a.sede_nombre || '-'}</span>
-                    <span class="flex items-center gap-1">👤 ${a.auditor_nombre || '-'}</span>
-                    <span class="flex items-center gap-1">📅 ${formatDate(a.fecha)}</span>
-                    <span class="flex items-center gap-1">📊 ${a.camaras_auditadas}/${a.total_camaras}</span>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) {
-        container.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm font-medium">Error al cargar histórico</div></div>`;
-        showToast('Error al cargar histórico', 'error');
+        try {
+            const verificaciones = await apiGet(url);
+            if (verificaciones.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-gray-400">
+                        <div class="text-5xl mb-3 opacity-50">📭</div>
+                        <div class="text-sm font-medium">No se encontraron registros de calibración</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = verificaciones.map((v, i) => {
+                const totalTherms = Math.ceil(v.detalles.length / 2);
+                const allApproved = v.detalles.every(d => d.aprobado);
+                const badgeColor = allApproved ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600';
+                const badgeText = allApproved ? '✅ Aprobado' : '⚠️ Desviado';
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300 cursor-pointer animate-in" style="animation-delay: ${i * 0.05}s" onclick="window.location.href='/verificacion_termometros/detalle/${v.id}'">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="font-bold text-sm text-ransa-700">${v.codigo}</div>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeColor}">
+                                ${badgeText}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+                            <span class="flex items-center gap-1">🏢 ${v.sede_nombre || '-'}</span>
+                            <span class="flex items-center gap-1">📅 ${formatPlainDate(v.fecha)}</span>
+                            <span class="flex items-center gap-1">🌡️ ${totalTherms} Termo(s)</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            container.innerHTML = `<div class="text-center py-16 text-gray-400"><div class="text-sm font-medium">Error al cargar histórico</div></div>`;
+            showToast('Error al cargar histórico', 'error');
+        }
     }
 }
 
-function formatDate(dateStr) {
+function formatDateTime(dateStr) {
     if (!dateStr) return '-';
     const d = new Date(dateStr);
     return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function formatPlainDate(dateStr) {
+    if (!dateStr) return '-';
+    // dateStr comes as YYYY-MM-DD
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1]-1, parts[2]);
+        return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+    return dateStr;
 }
 </script>
 {% endblock %}

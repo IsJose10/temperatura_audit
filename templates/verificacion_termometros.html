@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+{% block title %}RANSA - Verificación de Termómetros{% endblock %}
+
+{% block body %}
+<div class="app-container">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg">🌡️</div>
+            <span class="font-bold text-base tracking-wide">VERIFICACIÓN DE TERMÓMETROS</span>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-5 py-5 pb-24 space-y-5">
+        
+        <!-- Sede and General Info -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">DATOS DE LA VERIFICACIÓN</h3>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Sede</label>
+                    <select id="sedeSelect" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all cursor-pointer">
+                        <option value="">Seleccionar sede...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Fecha</label>
+                    <input type="date" id="fechaInput" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Equipo bajo verificación</label>
+                    <input type="text" id="equipoInput" value="Termómetros Punzón/Láser" placeholder="Ej: Termómetros" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Serial ID Termómetro Patrón</label>
+                    <input type="text" id="patronInput" placeholder="Ej: PAT-01" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Thermometers List -->
+        <div class="space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider">LISTA DE TERMÓMETROS</h3>
+                <button onclick="addThermometerCard()" class="px-3 py-1.5 bg-ransa-50 text-ransa-700 hover:bg-ransa-100 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                    ➕ Agregar Termómetro
+                </button>
+            </div>
+
+            <div id="thermometersContainer" class="space-y-4">
+                <!-- Cards will be dynamically injected here -->
+            </div>
+        </div>
+
+        <!-- Deviation Actions, Signatures and Obs -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4">
+            <div>
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">ACCIONES EN CASO DE DESVIACIÓN</h3>
+                <p class="text-[10px] text-gray-400 mb-3">Si la desviación supera el límite de ±1°C, seleccione una acción correctiva:</p>
+                <div class="space-y-2.5">
+                    <label class="flex items-center gap-3 text-xs font-medium text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="accionReajuste" class="rounded border-gray-300 text-ransa-600 focus:ring-ransa-500 h-4.5 w-4.5">
+                        <span>Reajuste de termómetro verificado</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="accionMantenimiento" class="rounded border-gray-300 text-ransa-600 focus:ring-ransa-500 h-4.5 w-4.5">
+                        <span>Envío a mantenimiento y calibración externa</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="accionReemplazo" class="rounded border-gray-300 text-ransa-600 focus:ring-ransa-500 h-4.5 w-4.5">
+                        <span>Reemplazo del equipo</span>
+                    </label>
+                    <label class="flex items-center gap-3 text-xs font-medium text-gray-700 cursor-pointer">
+                        <input type="checkbox" id="accionNoAplica" checked class="rounded border-gray-300 text-ransa-600 focus:ring-ransa-500 h-4.5 w-4.5">
+                        <span>No aplican acciones por desviación</span>
+                    </label>
+                </div>
+            </div>
+
+            <hr class="border-gray-100">
+
+            <div>
+                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Revisado y Aprobado por</label>
+                <input type="text" id="revisadoPorInput" placeholder="Nombre de quien revisa y aprueba" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Observaciones específicas (cite el número de serial)</label>
+                <textarea id="observacionesInput" placeholder="Detalle observaciones específicas aquí..." rows="3" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm font-medium bg-white resize-none focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all"></textarea>
+            </div>
+        </div>
+
+        <!-- Guardar Button -->
+        <div class="flex justify-end pt-2">
+            <button id="btnGuardarVerificacion" onclick="guardarVerificacion()" class="w-full py-4 bg-gradient-to-r from-ransa-700 to-ransa-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-ransa-700/25 hover:shadow-xl hover:shadow-ransa-700/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center gap-2">
+                📥 Guardar Registro de Calibración (FR-CAL-037)
+            </button>
+        </div>
+
+        <!-- Logo footer -->
+        <div class="text-center py-6">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/auditoria">
+            <span class="nav-icon">📋</span>
+            Auditoría
+        </a>
+        <a href="/verificacion_termometros" class="active">
+            <span class="nav-icon">🌡️</span>
+            Termómetros
+        </a>
+        <a href="/historico">
+            <span class="nav-icon">📚</span>
+            Histórico
+        </a>
+        <a href="/dashboard">
+            <span class="nav-icon">📊</span>
+            Dashboard
+        </a>
+        <a href="#" onclick="logout()">
+            <span class="nav-icon">🚪</span>
+            Salir
+        </a>
+    </nav>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ponytail: simple page scripts with dynamic rows
+let currentAuditor = '';
+let thermCount = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+    requireAuth();
+    
+    // Set date input to today in local Colombia TZ
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const colDate = new Date(today.getTime() - (offset * 60 * 1000));
+    document.getElementById('fechaInput').value = colDate.toISOString().split('T')[0];
+
+    // Load user name
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    currentAuditor = user.nombre_completo || '';
+    
+    loadSedes();
+
+    // Add first card
+    addThermometerCard();
+});
+
+async function loadSedes() {
+    try {
+        const sedes = await apiGet('/api/sedes');
+        const sel = document.getElementById('sedeSelect');
+        sedes.forEach(s => {
+            sel.innerHTML += `<option value="${s.id}">${s.nombre}</option>`;
+        });
+    } catch {
+        showToast('Error al cargar sedes', 'error');
+    }
+}
+
+function addThermometerCard() {
+    thermCount++;
+    const container = document.getElementById('thermometersContainer');
+    
+    const cardHtml = `
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm space-y-4 animate-in relative" id="card_${thermCount}">
+            <!-- Header card -->
+            <div class="flex justify-between items-center mb-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-ransa-700 bg-ransa-50 px-2.5 py-1 rounded-lg">#${thermCount}</span>
+                    <span class="font-bold text-xs text-gray-500 uppercase tracking-wider">Termómetro</span>
+                </div>
+                ${thermCount > 1 ? `
+                <button onclick="removeThermometerCard(${thermCount})" class="text-red-400 hover:text-red-600 text-xs font-bold transition-all">
+                    🗑️ Eliminar
+                </button>` : ''}
+            </div>
+
+            <!-- Fields -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                    <label class="block text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Asignado A</label>
+                    <input type="text" placeholder="Nombre de a quién se asigna" id="asignado_${thermCount}" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Serial ID</label>
+                    <input type="text" placeholder="Ej: TL-01, TP-01" id="serial_${thermCount}" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Marca / Modelo</label>
+                    <input type="text" placeholder="Ej: Fluke, Comark" id="marca_${thermCount}" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <!-- Congelado Point -->
+                <div class="rounded-xl border border-blue-100 bg-blue-50/20 p-3 space-y-2">
+                    <div class="text-[10px] font-bold text-blue-700 flex items-center gap-1 mb-1">❄️ Congelado (-18°C)</div>
+                    <div>
+                        <label class="block text-[8px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Lectura Verificada (°C)</label>
+                        <input type="number" step="0.1" placeholder="0.0" id="med_cong_${thermCount}" oninput="recalcRow(${thermCount})" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Lectura Patrón (°C)</label>
+                        <input type="number" step="0.1" value="-18.0" id="pat_cong_${thermCount}" oninput="recalcRow(${thermCount})" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all">
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] font-bold pt-1.5 border-t border-blue-100/50">
+                        <span class="text-gray-400">Corr:</span>
+                        <span id="corr_cong_${thermCount}" class="text-gray-600">—</span>
+                    </div>
+                </div>
+
+                <!-- Refrigerado Point -->
+                <div class="rounded-xl border border-emerald-100 bg-emerald-50/20 p-3 space-y-2">
+                    <div class="text-[10px] font-bold text-emerald-700 flex items-center gap-1 mb-1">🥦 Refrigeración (0°C)</div>
+                    <div>
+                        <label class="block text-[8px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Lectura Verificada (°C)</label>
+                        <input type="number" step="0.1" placeholder="0.0" id="med_ref_${thermCount}" oninput="recalcRow(${thermCount})" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-[8px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Lectura Patrón (°C)</label>
+                        <input type="number" step="0.1" value="0.0" id="pat_ref_${thermCount}" oninput="recalcRow(${thermCount})" class="w-full px-2 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-center bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent transition-all">
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] font-bold pt-1.5 border-t border-emerald-100/50">
+                        <span class="text-gray-400">Corr:</span>
+                        <span id="corr_ref_${thermCount}" class="text-gray-600">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status block -->
+            <div id="status_${thermCount}" class="hidden rounded-xl px-4 py-2.5 flex items-center justify-between text-xs font-bold transition-all">
+                <span class="flex items-center gap-1.5">
+                    <span id="status_icon_${thermCount}">✅</span>
+                    <span id="status_label_${thermCount}">Termómetro OK</span>
+                </span>
+                <span id="status_desc_${thermCount}" class="text-[10px] text-gray-400 font-semibold"></span>
+            </div>
+            
+            <input type="hidden" id="firma_${thermCount}">
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', cardHtml);
+    document.getElementById(`firma_${thermCount}`).value = currentAuditor;
+}
+
+function removeThermometerCard(id) {
+    const card = document.getElementById(`card_${id}`);
+    if (card) card.remove();
+}
+
+function recalcRow(id) {
+    const medCong = parseFloat(document.getElementById(`med_cong_${id}`).value);
+    const patCong = parseFloat(document.getElementById(`pat_cong_${id}`).value);
+    const medRef = parseFloat(document.getElementById(`med_ref_${id}`).value);
+    const patRef = parseFloat(document.getElementById(`pat_ref_${id}`).value);
+
+    let congOk = true;
+    let refOk = true;
+    let anyCongFilled = !isNaN(medCong) && !isNaN(patCong);
+    let anyRefFilled = !isNaN(medRef) && !isNaN(patRef);
+
+    // Congelado
+    if (anyCongFilled) {
+        // Corrección = Verificado - Patrón
+        const corr = parseFloat((medCong - patCong).toFixed(2));
+        const sign = corr >= 0 ? '+' : '';
+        document.getElementById(`corr_cong_${id}`).textContent = `${sign}${corr}°C`;
+        document.getElementById(`corr_cong_${id}`).className = Math.abs(corr) <= 1.0 ? 'text-emerald-600' : 'text-red-600';
+        congOk = Math.abs(corr) <= 1.0;
+    } else {
+        document.getElementById(`corr_cong_${id}`).textContent = '—';
+        document.getElementById(`corr_cong_${id}`).className = 'text-gray-600';
+    }
+
+    // Refrigerado
+    if (anyRefFilled) {
+        const corr = parseFloat((medRef - patRef).toFixed(2));
+        const sign = corr >= 0 ? '+' : '';
+        document.getElementById(`corr_ref_${id}`).textContent = `${sign}${corr}°C`;
+        document.getElementById(`corr_ref_${id}`).className = Math.abs(corr) <= 1.0 ? 'text-emerald-600' : 'text-red-600';
+        refOk = Math.abs(corr) <= 1.0;
+    } else {
+        document.getElementById(`corr_ref_${id}`).textContent = '—';
+        document.getElementById(`corr_ref_${id}`).className = 'text-gray-600';
+    }
+
+    // Show status if at least one is filled
+    const statusBox = document.getElementById(`status_${id}`);
+    if (anyCongFilled || anyRefFilled) {
+        statusBox.classList.remove('hidden');
+        const overallOk = congOk && refOk;
+        
+        if (overallOk) {
+            statusBox.style.background = '#f0fdf4';
+            statusBox.style.borderColor = '#10b981';
+            statusBox.style.borderWidth = '1px';
+            statusBox.style.color = '#065f46';
+            document.getElementById(`status_icon_${id}`).textContent = '✅';
+            document.getElementById(`status_label_${id}`).textContent = 'Aprobado';
+            document.getElementById(`status_desc_${id}`).textContent = 'Desviación permitida (<= ±1°C)';
+        } else {
+            statusBox.style.background = '#fff1f2';
+            statusBox.style.borderColor = '#f43f5e';
+            statusBox.style.borderWidth = '1px';
+            statusBox.style.color = '#9f1239';
+            document.getElementById(`status_icon_${id}`).textContent = '⚠️';
+            document.getElementById(`status_label_${id}`).textContent = 'Rechazado';
+            document.getElementById(`status_desc_${id}`).textContent = 'Supera límite de ±1°C';
+            
+            // Set correct action checkbox (uncheck no_aplica, check reajuste or maintenance)
+            document.getElementById('accionNoAplica').checked = false;
+            document.getElementById('accionReajuste').checked = true;
+            
+            showToast('⚠️ Desviación excede ±1°C. Se requiere acción correctiva.', 'warning');
+        }
+    } else {
+        statusBox.classList.add('hidden');
+    }
+}
+
+async function guardarVerificacion() {
+    const sedeId = document.getElementById('sedeSelect').value;
+    if (!sedeId) return showToast('Seleccione una sede', 'warning');
+    
+    const fecha = document.getElementById('fechaInput').value;
+    if (!fecha) return showToast('Seleccione una fecha', 'warning');
+    
+    const patron = document.getElementById('patronInput').value;
+    if (!patron) return showToast('Ingrese el Serial ID del Termómetro Patrón', 'warning');
+
+    // Collect thermometer entries
+    const cards = document.querySelectorAll('[id^="card_"]');
+    const detalles = [];
+
+    let hasReadings = false;
+
+    for (let card of cards) {
+        const id = card.id.split('_')[1];
+        
+        const asignado = document.getElementById(`asignado_${id}`).value;
+        const serial = document.getElementById(`serial_${id}`).value;
+        const marca = document.getElementById(`marca_${id}`).value;
+        const firma = document.getElementById(`firma_${id}`).value || currentAuditor;
+
+        // Congelado Point values
+        const medCongVal = document.getElementById(`med_cong_${id}`).value;
+        const patCongVal = document.getElementById(`pat_cong_${id}`).value;
+        
+        // Refrigerado Point values
+        const medRefVal = document.getElementById(`med_ref_${id}`).value;
+        const patRefVal = document.getElementById(`pat_ref_${id}`).value;
+
+        // Validar que se hayan llenado los datos del termómetro si se inició
+        if (asignado || serial || medCongVal || medRefVal) {
+            if (!serial) return showToast(`Falta Serial ID para el termómetro asignado a ${asignado || 'un responsable'}`, 'warning');
+            
+            // Congelado
+            if (medCongVal !== '') {
+                hasReadings = true;
+                detalles.push({
+                    asignado_a: asignado || null,
+                    serial_id: serial,
+                    marca_modelo: marca || null,
+                    valor_objetivo: -18.0,
+                    lectura_verificado: parseFloat(medCongVal),
+                    lectura_patron: parseFloat(patCongVal || -18.0),
+                    emp: '±1',
+                    firma_realiza: firma || null
+                });
+            }
+            
+            // Refrigerado
+            if (medRefVal !== '') {
+                hasReadings = true;
+                detalles.push({
+                    asignado_a: asignado || null,
+                    serial_id: serial,
+                    marca_modelo: marca || null,
+                    valor_objetivo: 0.0,
+                    lectura_verificado: parseFloat(medRefVal),
+                    lectura_patron: parseFloat(patRefVal || 0.0),
+                    emp: '±1',
+                    firma_realiza: firma || null
+                });
+            }
+        }
+    }
+
+    if (!hasReadings) {
+        return showToast('Ingrese al menos una lectura de calibración (congelado o refrigeración)', 'warning');
+    }
+
+    const payload = {
+        sede_id: parseInt(sedeId),
+        fecha: fecha,
+        equipo: document.getElementById('equipoInput').value || 'Termómetros Punzón/Láser',
+        serial_patron: patron,
+        observaciones: document.getElementById('observacionesInput').value || null,
+        revisado_por: document.getElementById('revisadoPorInput').value || null,
+        accion_reajuste: document.getElementById('accionReajuste').checked,
+        accion_mantenimiento: document.getElementById('accionMantenimiento').checked,
+        accion_reemplazo: document.getElementById('accionReemplazo').checked,
+        accion_no_aplica: document.getElementById('accionNoAplica').checked,
+        detalles: detalles
+    };
+
+    try {
+        showLoading(true);
+        const res = await apiPost('/api/verificaciones', payload);
+        showToast('Registro de calibración guardado exitosamente', 'success');
+        
+        // Redirect to Historico tab
+        setTimeout(() => {
+            window.location.href = '/historico?tab=termometros';
+        }, 1200);
+    } catch (e) {
+        showToast('Error al guardar: ' + e.message, 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+</script>
+{% endblock %}
