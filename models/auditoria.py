@@ -32,7 +32,7 @@ class AuditoriaDetalle(Base):
     temperatura = Column(Numeric(5, 2), nullable=True)
     temperatura_pasillo = Column(Numeric(5, 2), nullable=True)
     observaciones = Column(Text, nullable=True)
-    foto_url = Column(String(255), nullable=True)
+    foto_url = Column(Text, nullable=True)
     nombre_auditor = Column(String(150), nullable=True)
     fecha_registro = Column(Date, nullable=True)
     hora_registro = Column(Time, nullable=True)

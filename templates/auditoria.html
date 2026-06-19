@@ -336,10 +336,26 @@ async function openCamera() {
 
 function takePhoto() {
     const video = _el('cameraPreview'), canvas = _el('photoCanvas');
-    canvas.width  = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    capturedPhotoData = canvas.toDataURL('image/jpeg', 0.8);
+    
+    // Scale down image to max 800px width/height to save DB space
+    const maxDim = 800;
+    let width = video.videoWidth;
+    let height = video.videoHeight;
+    
+    if (width > maxDim || height > maxDim) {
+        if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+        } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+        }
+    }
+    
+    canvas.width  = width;
+    canvas.height = height;
+    canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+    capturedPhotoData = canvas.toDataURL('image/jpeg', 0.7);
     _el('capturedPhoto').src              = capturedPhotoData;
     _el('photoPreview').style.display     = 'block';
     stopCamera();
