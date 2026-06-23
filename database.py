@@ -29,10 +29,15 @@ def init_database():
 if not os.getenv("DATABASE_URL"):
     init_database()
 
-# 🔥 ENGINE CORRECTO
+# 🔥 ENGINE con pool optimizado para uso simultáneo multi-dispositivo
 engine = create_engine(
     DATABASE_URL,
-    echo=False
+    echo=False,
+    pool_size=10,          # Conexiones permanentes en el pool
+    max_overflow=20,       # Conexiones adicionales bajo carga (total max: 30)
+    pool_pre_ping=True,    # Detecta conexiones rotas antes de usarlas
+    pool_recycle=300,      # Recicla conexiones cada 5 min (evita timeouts del server)
+    pool_timeout=10,       # Max 10s esperando una conexión libre del pool
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

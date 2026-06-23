@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 
 from database import get_db
@@ -46,15 +46,26 @@ def get_historico(
         query = query.filter(Auditoria.fecha <= fecha_hasta)
 
     total = query.count()
-    auditorias = query.order_by(Auditoria.fecha.desc()).offset((page - 1) * limit).limit(limit).all()
+    auditorias = query.options(
+        joinedload(Auditoria.detalles)
+    ).order_by(Auditoria.fecha.desc()).offset((page - 1) * limit).limit(limit).all()
+
+    # Batch-load sedes, auditores y cámaras (elimina N+1 queries)
+    sede_ids = {a.sede_id for a in auditorias}
+    auditor_ids = {a.auditor_id for a in auditorias}
+    cam_ids = {d.camara_id for a in auditorias for d in a.detalles}
+
+    sede_map = {s.id: s for s in db.query(Sede).filter(Sede.id.in_(sede_ids)).all()} if sede_ids else {}
+    auditor_map = {u.id: u for u in db.query(Usuario).filter(Usuario.id.in_(auditor_ids)).all()} if auditor_ids else {}
+    cam_map = {c.id: c for c in db.query(Camara).filter(Camara.id.in_(cam_ids)).all()} if cam_ids else {}
 
     result = []
     for a in auditorias:
-        sede = db.query(Sede).filter(Sede.id == a.sede_id).first()
-        auditor = db.query(Usuario).filter(Usuario.id == a.auditor_id).first()
+        sede = sede_map.get(a.sede_id)
+        auditor = auditor_map.get(a.auditor_id)
         detalles = []
         for d in a.detalles:
-            camara = db.query(Camara).filter(Camara.id == d.camara_id).first()
+            camara = cam_map.get(d.camara_id)
             detalles.append(AuditoriaDetalleResponse(
                 id=d.id,
                 camara_id=d.camara_id,
@@ -94,16 +105,22 @@ def get_auditoria_detail(
     current_user: Usuario = Depends(get_current_user)
 ):
     
-    a = db.query(Auditoria).filter(Auditoria.id == id).first()
+    a = db.query(Auditoria).options(
+        joinedload(Auditoria.detalles)
+    ).filter(Auditoria.id == id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Auditoría no encontrada")
         
     sede = db.query(Sede).filter(Sede.id == a.sede_id).first()
     auditor = db.query(Usuario).filter(Usuario.id == a.auditor_id).first()
-    
+
+    # Batch-load cámaras
+    cam_ids = {d.camara_id for d in a.detalles}
+    cam_map = {c.id: c for c in db.query(Camara).filter(Camara.id.in_(cam_ids)).all()} if cam_ids else {}
+
     detalles = []
     for d in a.detalles:
-        camara = db.query(Camara).filter(Camara.id == d.camara_id).first()
+        camara = cam_map.get(d.camara_id)
         detalles.append(AuditoriaDetalleResponse(
             id=d.id,
             camara_id=d.camara_id,

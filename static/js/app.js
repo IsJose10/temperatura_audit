@@ -34,82 +34,131 @@ function logout() {
 // API Helpers
 // ============================
 
-async function apiGet(url) {
-    const response = await fetch(url, {
-        headers: {
-            'Authorization': `Bearer ${getToken()}`
-        }
-    });
+const API_TIMEOUT_MS = 30000; // 30 segundos timeout
+const API_MAX_RETRIES = 2;    // reintentos para GET
+
+function _createAbortController() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    return { signal: controller.signal, timeoutId };
+}
+
+function _clearTimeout(timeoutId) {
+    clearTimeout(timeoutId);
+}
+
+async function _handleResponse(response) {
     if (response.status === 401) {
         logout();
         throw new Error('Sesión expirada');
     }
     if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error en la solicitud');
+        const detail = err.detail || `Error del servidor (${response.status})`;
+        throw new Error(detail);
     }
-    // Handle null response
-    const text = await response.text();
-    if (!text || text === 'null') return null;
-    return JSON.parse(text);
+}
+
+function _handleFetchError(error) {
+    if (error.name === 'AbortError') {
+        throw new Error('La solicitud tardó demasiado. Verifica tu conexión e intenta de nuevo.');
+    }
+    if (!navigator.onLine) {
+        throw new Error('Sin conexión a internet. Verifica tu red e intenta de nuevo.');
+    }
+    throw error;
+}
+
+async function apiGet(url) {
+    let lastError;
+    for (let attempt = 0; attempt <= API_MAX_RETRIES; attempt++) {
+        const { signal, timeoutId } = _createAbortController();
+        try {
+            if (attempt > 0) {
+                // Backoff exponencial: 1s, 2s
+                await new Promise(r => setTimeout(r, 1000 * attempt));
+            }
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${getToken()}` },
+                signal
+            });
+            _clearTimeout(timeoutId);
+            await _handleResponse(response);
+            const text = await response.text();
+            if (!text || text === 'null') return null;
+            return JSON.parse(text);
+        } catch (error) {
+            _clearTimeout(timeoutId);
+            lastError = error;
+            // No reintentar errores de autenticación o del servidor (4xx)
+            if (error.message === 'Sesión expirada' || error.message.includes('Error del servidor (4')) {
+                throw error;
+            }
+            if (attempt === API_MAX_RETRIES) {
+                _handleFetchError(error);
+            }
+        }
+    }
+    throw lastError;
 }
 
 async function apiPost(url, data) {
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`
-        },
-        body: JSON.stringify(data)
-    });
-    if (response.status === 401) {
-        logout();
-        throw new Error('Sesión expirada');
+    const { signal, timeoutId } = _createAbortController();
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(data),
+            signal
+        });
+        _clearTimeout(timeoutId);
+        await _handleResponse(response);
+        return await response.json();
+    } catch (error) {
+        _clearTimeout(timeoutId);
+        _handleFetchError(error);
     }
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error en la solicitud');
-    }
-    return await response.json();
 }
 
 async function apiPut(url, data) {
-    const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}`
-        },
-        body: JSON.stringify(data)
-    });
-    if (response.status === 401) {
-        logout();
-        throw new Error('Sesión expirada');
+    const { signal, timeoutId } = _createAbortController();
+    try {
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(data),
+            signal
+        });
+        _clearTimeout(timeoutId);
+        await _handleResponse(response);
+        return await response.json();
+    } catch (error) {
+        _clearTimeout(timeoutId);
+        _handleFetchError(error);
     }
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error en la solicitud');
-    }
-    return await response.json();
 }
 
 async function apiDelete(url) {
-    const response = await fetch(url, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${getToken()}`
-        }
-    });
-    if (response.status === 401) {
-        logout();
-        throw new Error('Sesión expirada');
+    const { signal, timeoutId } = _createAbortController();
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` },
+            signal
+        });
+        _clearTimeout(timeoutId);
+        await _handleResponse(response);
+        return await response.json();
+    } catch (error) {
+        _clearTimeout(timeoutId);
+        _handleFetchError(error);
     }
-    if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.detail || 'Error en la solicitud');
-    }
-    return await response.json();
 }
 
 // ============================

@@ -9,7 +9,7 @@ Reglas de negocio:
 """
 from datetime import datetime, timezone, timedelta
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 import base64, os, uuid
 
 from database import get_db
@@ -133,16 +133,27 @@ def create_auditoria(data: AuditoriaCreate, db: Session = Depends(get_db),
 def get_auditoria_activa(sede_id: int, db: Session = Depends(get_db),
                          current_user: Usuario = Depends(get_current_user)):
     """Retorna la auditoría en progreso de una sede (o null si no existe)."""
-    audit = db.query(Auditoria).filter(
+    audit = db.query(Auditoria).options(
+        joinedload(Auditoria.detalles)
+    ).filter(
         Auditoria.sede_id == sede_id, Auditoria.estado == "en_progreso"
     ).order_by(Auditoria.fecha.desc()).first()
     if not audit:
         return None
 
     sede = db.query(Sede).filter(Sede.id == audit.sede_id).first()
+
+    # Pre-cargar cámaras de la sede en un solo query (en vez de 1 por detalle)
+    cam_ids = {d.camara_id for d in audit.detalles}
+    if cam_ids:
+        cams = db.query(Camara).filter(Camara.id.in_(cam_ids)).all()
+        cam_map = {c.id: c for c in cams}
+    else:
+        cam_map = {}
+
     detalles = []
     for d in audit.detalles:
-        cam = db.query(Camara).filter(Camara.id == d.camara_id).first()
+        cam = cam_map.get(d.camara_id)
         detalles.append(AuditoriaDetalleResponse(
             id=d.id, camara_id=d.camara_id,
             camara_nombre=cam.nombre if cam else None,
