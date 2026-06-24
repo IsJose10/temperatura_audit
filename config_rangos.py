@@ -51,6 +51,7 @@ RANGOS_TEMPERATURA = {
         "Cámara de congelado 1":        (-20, -18),
         "Cámara de congelado 2":        (-20, -18),
         "Cámara de congelado 3":        (-20, -18),
+        "Bahía":                        (None, 16),
     },
     "Galapa": {
         "Pasillo 403":             (-20, -18),
@@ -64,13 +65,15 @@ RANGOS_TEMPERATURA = {
         "Bahía":                   (None, 16),    # <= 16°C
     },
     "Caldas": {
-        "PRECAVA DE CONGELADO":   (-21, -18),
-        "PRECAV DE REFRIGERADO":  (0, 4),
+        "CAVA REFRIGERADOS 1":    (0, 4),
+        "CAVA REFRIGERADOS 2":    (0, 4),
+        "CAVA REFRIGERADOS 3":    (0, 4),
+        "CAVA CONGELADOS 1":      (-21, -18),
+        "CAVA CONGELADOS 2":      (-21, -18),
         "CONVER 1":               (-21, -18),
-        "CONGELADOS 2":           (-21, -18),
-        "CONGELADOS 1":           (-21, -18),
-        "CONVER 2":               (0, 4),
-        "FRISBY REFRIGERADO":     (0, 4),
+        "CONVER 2":               (-21, -18),
+        "CAVA MAQUILA":           (0, 4),
+        "CAVA FRUVER CENCOSUD":   (0, 4),
     },
 }
 

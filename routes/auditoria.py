@@ -55,6 +55,7 @@ def _build_detalle_response(d, camara, cumpl: dict) -> AuditoriaDetalleResponse:
         temperatura=float(d.temperatura) if d.temperatura is not None else None,
         temperatura_pasillo=float(d.temperatura_pasillo) if d.temperatura_pasillo is not None else None,
         observaciones=d.observaciones, foto_url=d.foto_url,
+        foto_url_2=d.foto_url_2,
         nombre_auditor=d.nombre_auditor,
         fecha_registro=d.fecha_registro, hora_registro=d.hora_registro,
         registrado_at=d.registrado_at,
@@ -161,6 +162,7 @@ def get_auditoria_activa(sede_id: int, db: Session = Depends(get_db),
             temperatura=float(d.temperatura) if d.temperatura is not None else None,
             temperatura_pasillo=float(d.temperatura_pasillo) if d.temperatura_pasillo is not None else None,
             observaciones=d.observaciones, foto_url=d.foto_url,
+            foto_url_2=d.foto_url_2,
             nombre_auditor=d.nombre_auditor, fecha_registro=d.fecha_registro,
             hora_registro=d.hora_registro, registrado_at=d.registrado_at,
         ))
@@ -220,6 +222,8 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate,
         existing.hora_registro       = now.time()
         if data.foto_url:
             existing.foto_url = data.foto_url
+        if data.foto_url_2:
+            existing.foto_url_2 = data.foto_url_2
         db.commit(); db.refresh(existing)
         return _build_detalle_response(existing, cam,
                                        _check_cumplimiento(sede.nombre, cam.nombre, existing))
@@ -230,6 +234,7 @@ def add_detalle(auditoria_id: int, data: AuditoriaDetalleCreate,
         nombre_producto=data.nombre_producto, temperatura=data.temperatura,
         temperatura_pasillo=data.temperatura_pasillo,
         observaciones=data.observaciones, foto_url=data.foto_url,
+        foto_url_2=data.foto_url_2,
         nombre_auditor=current_user.nombre_completo,
         fecha_registro=now.date(), hora_registro=now.time(),
     )

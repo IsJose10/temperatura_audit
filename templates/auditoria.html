@@ -126,34 +126,61 @@
                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-medium resize-none focus:outline-none focus:ring-2 focus:ring-ransa-400 focus:border-transparent transition-all"></textarea>
             </div>
 
-            <!-- Photo capture -->
+            <!-- Photo capture: Foto 1 -->
             <div>
                 <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    <span>📸</span> Evidencia Fotográfica
+                    <span>📸</span> Foto 1
                 </div>
                 <div class="photo-capture-area">
-                    <div id="cameraContainer" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
-                        <video id="cameraPreview" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
+                    <div id="cameraContainer1" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
+                        <video id="cameraPreview1" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
                         <div class="flex gap-2 p-2.5 bg-black/70">
-                            <button onclick="takePhoto()" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
-                            <button onclick="stopCamera()" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
+                            <button onclick="takePhoto(1)" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
+                            <button onclick="stopCamera(1)" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
                         </div>
                     </div>
-
-                    <div id="photoPreview" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
-                        <img id="capturedPhoto" src="" alt="Foto capturada" class="w-full block max-h-[250px] object-cover">
+                    <div id="photoPreview1" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
+                        <img id="capturedPhoto1" src="" alt="Foto 1" class="w-full block max-h-[250px] object-cover">
                         <div class="flex gap-2 p-2 bg-gray-50">
-                            <button onclick="retakePhoto()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
-                            <button onclick="removePhoto()" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
+                            <button onclick="retakePhoto(1)" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
+                            <button onclick="removePhoto(1)" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
                         </div>
                     </div>
+                    <div id="btnOpenPhoto1" class="flex gap-2">
+                        <button onclick="openCamera(1)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">📷 Cámara</button>
+                        <button onclick="openGallery(1)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">🖼️ Galería</button>
+                    </div>
+                    <input type="file" id="galleryInput1" accept="image/*" style="display:none" onchange="onGalleryPick(1, event)">
+                    <canvas id="photoCanvas1" style="display:none;"></canvas>
+                </div>
+            </div>
 
-                    <button id="btnOpenCamera" onclick="openCamera()"
-                            class="w-full py-3.5 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">
-                        📷 Tomar Foto como Evidencia
-                    </button>
-
-                    <canvas id="photoCanvas" style="display:none;"></canvas>
+            <!-- Photo capture: Foto 2 -->
+            <div>
+                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                    <span>📸</span> Foto 2
+                </div>
+                <div class="photo-capture-area">
+                    <div id="cameraContainer2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
+                        <video id="cameraPreview2" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
+                        <div class="flex gap-2 p-2.5 bg-black/70">
+                            <button onclick="takePhoto(2)" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
+                            <button onclick="stopCamera(2)" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
+                        </div>
+                    </div>
+                    <div id="photoPreview2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
+                        <img id="capturedPhoto2" src="" alt="Foto 2" class="w-full block max-h-[250px] object-cover">
+                        <div class="flex gap-2 p-2 bg-gray-50">
+                            <button onclick="retakePhoto(2)" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
+                            <button onclick="removePhoto(2)" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                    <div id="btnOpenPhoto2" class="flex gap-2">
+                        <button onclick="openCamera(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">📷 Cámara</button>
+                        <button onclick="openGallery(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">🖼️ Galería</button>
+                    </div>
+                    <input type="file" id="galleryInput2" accept="image/*" style="display:none" onchange="onGalleryPick(2, event)">
+                    <canvas id="photoCanvas2" style="display:none;"></canvas>
                 </div>
             </div>
         </div>
@@ -204,8 +231,8 @@
 let currentAudit     = null;
 let sedes            = [];
 let camaras          = [];
-let cameraStream     = null;
-let capturedPhotoData = null;
+let cameraStreams    = { 1: null, 2: null };
+let capturedPhotos   = { 1: null, 2: null };
 
 const _el = id => document.getElementById(id);   // acceso rápido al DOM
 
@@ -216,14 +243,40 @@ document.addEventListener('DOMContentLoaded', () => {
     _el('auditorName').textContent = (JSON.parse(localStorage.getItem('user') || '{}')).nombre_completo || '-';
     _el('camaraSelect').addEventListener('change', e => {
         _el('detailSection').style.display = e.target.value ? 'block' : 'none';
-        if (!e.target.value) resetDetailFields();
+        if (!e.target.value) { resetDetailFields(); return; }
+        // ponytail: pre-fill form if camera already audited
+        if (currentAudit && currentAudit.detalles) {
+            const existing = currentAudit.detalles.find(d => String(d.camara_id) === e.target.value);
+            if (existing) {
+                _el('productoInput').value     = existing.nombre_producto || '';
+                _el('tempInput').value         = existing.temperatura !== null && existing.temperatura !== undefined ? existing.temperatura : '';
+                _el('tempPasilloInput').value   = existing.temperatura_pasillo !== null && existing.temperatura_pasillo !== undefined ? existing.temperatura_pasillo : '';
+                _el('obsInput').value           = existing.observaciones || '';
+                // Show existing photos as previews
+                if (existing.foto_url) {
+                    capturedPhotos[1] = existing.foto_url;
+                    _el('capturedPhoto1').src = existing.foto_url;
+                    _el('photoPreview1').style.display = 'block';
+                    _el('btnOpenPhoto1').style.display = 'none';
+                }
+                if (existing.foto_url_2) {
+                    capturedPhotos[2] = existing.foto_url_2;
+                    _el('capturedPhoto2').src = existing.foto_url_2;
+                    _el('photoPreview2').style.display = 'block';
+                    _el('btnOpenPhoto2').style.display = 'none';
+                }
+            } else {
+                resetDetailFields();
+            }
+        }
     });
 });
 
 function resetDetailFields() {
     ['productoInput', 'tempInput', 'tempPasilloInput', 'obsInput']
         .forEach(id => _el(id).value = '');
-    removePhoto();
+    removePhoto(1);
+    removePhoto(2);
 }
 
 // ── Carga de sedes y cámaras ─────────────────────────────────────────────────
@@ -285,16 +338,16 @@ function updateAuditUI(audit) {
         btn.classList.remove('hover:shadow-lg', 'hover:shadow-ransa-600/30', 'hover:-translate-y-0.5');
     }
 
-    // Marcar cámaras ya auditadas como deshabilitadas en el select
+    // ponytail: mark audited cameras visually but do NOT disable them
     const sel = _el('camaraSelect');
-    Array.from(sel.options).forEach(o => { if (o.value) { o.disabled = false; o.text = o.text.replace(' (Completada)', ''); } });
+    Array.from(sel.options).forEach(o => { if (o.value) { o.text = o.text.replace(' ✅', ''); } });
 
     const auditors = new Set();
     if (audit.nombre_auditor) auditors.add(audit.nombre_auditor);
     (audit.detalles || []).forEach(d => {
         if (d.nombre_auditor) auditors.add(d.nombre_auditor);
         const opt = sel.querySelector(`option[value="${d.camara_id}"]`);
-        if (opt) { opt.disabled = true; if (!opt.text.includes('(Completada)')) opt.text += ' (Completada)'; }
+        if (opt && !opt.text.includes('✅')) opt.text += ' ✅';
     });
 
     if (auditors.size) {
@@ -309,7 +362,7 @@ function resetAuditUI() {
     currentAudit = null;
 
     const sel = _el('camaraSelect');
-    if (sel) Array.from(sel.options).forEach(o => { if (o.value) { o.disabled = false; o.text = o.text.replace(' (Completada)', ''); } });
+    if (sel) Array.from(sel.options).forEach(o => { if (o.value) { o.text = o.text.replace(' ✅', ''); } });
 
     const btn = _el('btnNuevaAuditoria');
     if (btn) {
@@ -321,55 +374,77 @@ function resetAuditUI() {
     _el('auditorName').textContent    = (JSON.parse(localStorage.getItem('user') || '{}')).nombre_completo || '-';
 }
 
-// ── Cámara fotográfica ────────────────────────────────────────────────────────
-async function openCamera() {
+// ── Cámara fotográfica (dual) ────────────────────────────────────────────────
+async function openCamera(n) {
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({
+        cameraStreams[n] = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
         });
-        _el('cameraPreview').srcObject = cameraStream;
-        _el('cameraContainer').style.display = 'block';
-        _el('btnOpenCamera').style.display   = 'none';
-        _el('photoPreview').style.display    = 'none';
+        _el('cameraPreview' + n).srcObject = cameraStreams[n];
+        _el('cameraContainer' + n).style.display = 'block';
+        _el('btnOpenPhoto' + n).style.display    = 'none';
+        _el('photoPreview' + n).style.display     = 'none';
     } catch { showToast('No se pudo acceder a la cámara. Verifica los permisos.', 'error'); }
 }
 
-function takePhoto() {
-    const video = _el('cameraPreview'), canvas = _el('photoCanvas');
-    
-    // Scale down image to max 800px width/height to save DB space
+function openGallery(n) {
+    _el('galleryInput' + n).click();
+}
+
+function onGalleryPick(n, event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        // Resize via canvas (same as camera: max 800px)
+        const img = new window.Image();
+        img.onload = () => {
+            const canvas = _el('photoCanvas' + n);
+            const maxDim = 800;
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+                if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                else       { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            capturedPhotos[n] = canvas.toDataURL('image/jpeg', 0.7);
+            _el('capturedPhoto' + n).src = capturedPhotos[n];
+            _el('photoPreview' + n).style.display = 'block';
+            _el('btnOpenPhoto' + n).style.display = 'none';
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = ''; // reset so same file can be re-picked
+}
+
+function takePhoto(n) {
+    const video = _el('cameraPreview' + n), canvas = _el('photoCanvas' + n);
     const maxDim = 800;
-    let width = video.videoWidth;
-    let height = video.videoHeight;
-    
+    let width = video.videoWidth, height = video.videoHeight;
     if (width > maxDim || height > maxDim) {
-        if (width > height) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-        } else {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-        }
+        if (width > height) { height = Math.round((height * maxDim) / width); width = maxDim; }
+        else                { width = Math.round((width * maxDim) / height); height = maxDim; }
     }
-    
     canvas.width  = width;
     canvas.height = height;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
-    capturedPhotoData = canvas.toDataURL('image/jpeg', 0.7);
-    _el('capturedPhoto').src              = capturedPhotoData;
-    _el('photoPreview').style.display     = 'block';
-    stopCamera();
+    capturedPhotos[n] = canvas.toDataURL('image/jpeg', 0.7);
+    _el('capturedPhoto' + n).src           = capturedPhotos[n];
+    _el('photoPreview' + n).style.display  = 'block';
+    stopCamera(n);
 }
 
-function stopCamera() {
-    cameraStream?.getTracks().forEach(t => t.stop());
-    cameraStream = null;
-    _el('cameraContainer').style.display = 'none';
-    if (!capturedPhotoData) _el('btnOpenCamera').style.display = 'block';
+function stopCamera(n) {
+    cameraStreams[n]?.getTracks().forEach(t => t.stop());
+    cameraStreams[n] = null;
+    _el('cameraContainer' + n).style.display = 'none';
+    if (!capturedPhotos[n]) _el('btnOpenPhoto' + n).style.display = 'flex';
 }
 
-function retakePhoto()  { capturedPhotoData = null; _el('photoPreview').style.display = 'none'; openCamera(); }
-function removePhoto()  { capturedPhotoData = null; _el('photoPreview').style.display = 'none'; _el('btnOpenCamera').style.display = 'block'; stopCamera(); }
+function retakePhoto(n) { capturedPhotos[n] = null; _el('photoPreview' + n).style.display = 'none'; openCamera(n); }
+function removePhoto(n) { capturedPhotos[n] = null; _el('photoPreview' + n).style.display = 'none'; _el('btnOpenPhoto' + n).style.display = 'flex'; stopCamera(n); }
 
 // ── Guardar registro de cámara ───────────────────────────────────────────────
 async function guardarAuditoria() {
@@ -382,11 +457,15 @@ async function guardarAuditoria() {
 
     try {
         showLoading(true);
-        // Subir foto si fue capturada
-        let fotoUrl = null;
-        if (capturedPhotoData) {
-            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotoData });
+        // Subir fotos si fueron capturadas
+        let fotoUrl = null, fotoUrl2 = null;
+        if (capturedPhotos[1]) {
+            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[1] });
             fotoUrl = r.foto_url;
+        }
+        if (capturedPhotos[2]) {
+            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[2] });
+            fotoUrl2 = r.foto_url;
         }
 
         const detalle = await apiPost(`/api/auditorias/${currentAudit.id}/detalle`, {
@@ -396,11 +475,18 @@ async function guardarAuditoria() {
             temperatura_pasillo: tempPasillo ? parseFloat(tempPasillo) : null,
             observaciones:       _el('obsInput').value        || null,
             foto_url:            fotoUrl,
+            foto_url_2:          fotoUrl2,
         });
 
-        currentAudit.camaras_auditadas++;
+        // Update detalles: replace existing or add new
         if (!currentAudit.detalles) currentAudit.detalles = [];
-        currentAudit.detalles.push(detalle);
+        const idx = currentAudit.detalles.findIndex(d => d.camara_id === parseInt(camaraId));
+        if (idx >= 0) {
+            currentAudit.detalles[idx] = detalle;
+        } else {
+            currentAudit.camaras_auditadas++;
+            currentAudit.detalles.push(detalle);
+        }
         updateAuditUI(currentAudit);
         resetDetailFields();
         _el('camaraSelect').value             = '';

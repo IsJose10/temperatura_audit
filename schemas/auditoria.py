@@ -14,6 +14,7 @@ class AuditoriaDetalleCreate(BaseModel):
     temperatura_pasillo: Optional[float] = None
     observaciones: Optional[str] = None
     foto_url: Optional[str] = None
+    foto_url_2: Optional[str] = None
 
 
 class AuditoriaDetalleResponse(BaseModel):
@@ -25,6 +26,7 @@ class AuditoriaDetalleResponse(BaseModel):
     temperatura_pasillo: Optional[float] = None
     observaciones: Optional[str] = None
     foto_url: Optional[str] = None
+    foto_url_2: Optional[str] = None
     nombre_auditor: Optional[str] = None
     fecha_registro: Optional[date] = None
     hora_registro: Optional[time] = None
