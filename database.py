@@ -33,11 +33,17 @@ if not os.getenv("DATABASE_URL"):
 engine = create_engine(
     DATABASE_URL,
     echo=False,
-    pool_size=10,          # Conexiones permanentes en el pool
-    max_overflow=20,       # Conexiones adicionales bajo carga (total max: 30)
+    pool_size=3,           # Render Free Tier: max ~25 conexiones totales
+    max_overflow=7,        # Total máximo: 10 conexiones (seguro para plan gratuito)
     pool_pre_ping=True,    # Detecta conexiones rotas antes de usarlas
-    pool_recycle=300,      # Recicla conexiones cada 5 min (evita timeouts del server)
-    pool_timeout=10,       # Max 10s esperando una conexión libre del pool
+    pool_recycle=1800,     # Recicla conexiones cada 30 min (Render cierra idle ~10 min)
+    pool_timeout=30,       # Max 30s esperando conexión (evita fallo rápido bajo carga)
+    connect_args={
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5,
+    },
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
