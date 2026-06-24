@@ -129,7 +129,7 @@
             <!-- Photo capture: Foto 1 -->
             <div>
                 <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    <span>📸</span> Foto 1
+                    <span>📸</span> Foto
                 </div>
                 <div class="photo-capture-area">
                     <div id="cameraContainer1" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
@@ -140,7 +140,7 @@
                         </div>
                     </div>
                     <div id="photoPreview1" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
-                        <img id="capturedPhoto1" src="" alt="Foto 1" class="w-full block max-h-[250px] object-cover">
+                        <img id="capturedPhoto1" src="" alt="Foto" class="w-full block max-h-[250px] object-cover">
                         <div class="flex gap-2 p-2 bg-gray-50">
                             <button onclick="retakePhoto(1)" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
                             <button onclick="removePhoto(1)" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
@@ -155,32 +155,36 @@
                 </div>
             </div>
 
-            <!-- Photo capture: Foto 2 -->
-            <div>
-                <div class="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                    <span>📸</span> Foto 2
-                </div>
-                <div class="photo-capture-area">
-                    <div id="cameraContainer2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
-                        <video id="cameraPreview2" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
-                        <div class="flex gap-2 p-2.5 bg-black/70">
-                            <button onclick="takePhoto(2)" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
-                            <button onclick="stopCamera(2)" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
+            <!-- Photo 2: collapsible accordion -->
+            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <button type="button" onclick="toggleFoto2()" id="btnToggleFoto2"
+                        class="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-semibold text-gray-500">
+                    <span class="flex items-center gap-2"><span>📸</span> Foto adicional (opcional)</span>
+                    <span id="iconFoto2" class="text-gray-400 text-xs transition-transform duration-200">▼</span>
+                </button>
+                <div id="foto2Panel" style="display:none;" class="p-3 border-t border-gray-100 bg-white">
+                    <div class="photo-capture-area">
+                        <div id="cameraContainer2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-600 bg-black">
+                            <video id="cameraPreview2" autoplay playsinline class="w-full block max-h-[280px] object-cover"></video>
+                            <div class="flex gap-2 p-2.5 bg-black/70">
+                                <button onclick="takePhoto(2)" class="flex-1 py-2.5 bg-gradient-to-r from-ransa-600 to-ransa-700 text-white rounded-lg text-sm font-semibold transition-all" title="Tomar foto">📸 Capturar</button>
+                                <button onclick="stopCamera(2)" class="px-4 py-2.5 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all" title="Cancelar">✖</button>
+                            </div>
                         </div>
-                    </div>
-                    <div id="photoPreview2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
-                        <img id="capturedPhoto2" src="" alt="Foto 2" class="w-full block max-h-[250px] object-cover">
-                        <div class="flex gap-2 p-2 bg-gray-50">
-                            <button onclick="retakePhoto(2)" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
-                            <button onclick="removePhoto(2)" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
+                        <div id="photoPreview2" style="display:none;" class="rounded-xl overflow-hidden border-2 border-ransa-400">
+                            <img id="capturedPhoto2" src="" alt="Foto 2" class="w-full block max-h-[250px] object-cover">
+                            <div class="flex gap-2 p-2 bg-gray-50">
+                                <button onclick="retakePhoto(2)" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-all">🔄 Retomar</button>
+                                <button onclick="removePhoto(2)" class="px-3 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold hover:bg-red-700 transition-all">🗑️ Eliminar</button>
+                            </div>
                         </div>
+                        <div id="btnOpenPhoto2" class="flex gap-2">
+                            <button onclick="openCamera(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">📷 Cámara</button>
+                            <button onclick="openGallery(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">🖼️ Galería</button>
+                        </div>
+                        <input type="file" id="galleryInput2" accept="image/*" style="display:none" onchange="onGalleryPick(2, event)">
+                        <canvas id="photoCanvas2" style="display:none;"></canvas>
                     </div>
-                    <div id="btnOpenPhoto2" class="flex gap-2">
-                        <button onclick="openCamera(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">📷 Cámara</button>
-                        <button onclick="openGallery(2)" class="flex-1 py-3 bg-white text-ransa-700 border-2 border-dashed border-ransa-400 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-ransa-50 hover:border-solid transition-all">🖼️ Galería</button>
-                    </div>
-                    <input type="file" id="galleryInput2" accept="image/*" style="display:none" onchange="onGalleryPick(2, event)">
-                    <canvas id="photoCanvas2" style="display:none;"></canvas>
                 </div>
             </div>
         </div>
@@ -431,9 +435,14 @@ function takePhoto(n) {
     canvas.height = height;
     canvas.getContext('2d').drawImage(video, 0, 0, width, height);
     capturedPhotos[n] = canvas.toDataURL('image/jpeg', 0.7);
-    _el('capturedPhoto' + n).src           = capturedPhotos[n];
-    _el('photoPreview' + n).style.display  = 'block';
-    stopCamera(n);
+    // Detener stream
+    cameraStreams[n]?.getTracks().forEach(t => t.stop());
+    cameraStreams[n] = null;
+    // Actualizar UI manualmente (sin llamar stopCamera para no ocultar el preview)
+    _el('cameraContainer' + n).style.display = 'none';
+    _el('btnOpenPhoto' + n).style.display    = 'none';
+    _el('capturedPhoto' + n).src             = capturedPhotos[n];
+    _el('photoPreview' + n).style.display    = 'block';
 }
 
 function stopCamera(n) {
@@ -445,6 +454,16 @@ function stopCamera(n) {
 
 function retakePhoto(n) { capturedPhotos[n] = null; _el('photoPreview' + n).style.display = 'none'; openCamera(n); }
 function removePhoto(n) { capturedPhotos[n] = null; _el('photoPreview' + n).style.display = 'none'; _el('btnOpenPhoto' + n).style.display = 'flex'; stopCamera(n); }
+
+function toggleFoto2() {
+    const panel = _el('foto2Panel');
+    const icon  = _el('iconFoto2');
+    const open  = panel.style.display === 'none' || panel.style.display === '';
+    panel.style.display = open ? 'block' : 'none';
+    icon.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    // Si se cierra, detener cámara 2 si estaba abierta
+    if (!open) stopCamera(2);
+}
 
 // ── Guardar registro de cámara ───────────────────────────────────────────────
 async function guardarAuditoria() {
