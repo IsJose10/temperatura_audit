@@ -246,9 +246,5 @@ async def dashboard_page(request: Request):
 async def admin_usuarios_page(request: Request):
     return templates.TemplateResponse("admin_usuarios.html", {"request": request})
 
-# Create tables SOLO si hay conexión válida
-try:
-    Base.metadata.create_all(bind=engine)
-    print("[OK] Tablas creadas")
-except Exception as e:
-    print(f"[ERROR DB] {e}")
+
+# Tablas ya creadas al inicio del archivo (línea 23)

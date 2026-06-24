@@ -250,8 +250,11 @@ def download_pdf(auditoria_id: int, db: Session = Depends(get_db),
 
     detalles = db.query(AuditoriaDetalle).filter(
         AuditoriaDetalle.auditoria_id == audit.id).all()
-    pairs = [(d, db.query(Camara).filter(Camara.id == d.camara_id).first())
-             for d in detalles]
+
+    # Batch-load cámaras (evita N+1 queries que agotan el pool)
+    cam_ids = {d.camara_id for d in detalles}
+    cam_map = {c.id: c for c in db.query(Camara).filter(Camara.id.in_(cam_ids)).all()} if cam_ids else {}
+    pairs = [(d, cam_map.get(d.camara_id)) for d in detalles]
 
     buf      = _generate_pdf(audit, sede, pairs, db)
     safe_sede_nombre = _sanitize_filename(sede.nombre)
@@ -277,9 +280,13 @@ def get_cumplimiento(auditoria_id: int, db: Session = Depends(get_db),
     detalles = db.query(AuditoriaDetalle).filter(
         AuditoriaDetalle.auditoria_id == audit.id).all()
 
+    # Batch-load cámaras (evita N+1 queries)
+    cam_ids = {d.camara_id for d in detalles}
+    cam_map = {c.id: c for c in db.query(Camara).filter(Camara.id.in_(cam_ids)).all()} if cam_ids else {}
+
     results, cumple_n, nocumple_n = [], 0, 0
     for d in detalles:
-        cam   = db.query(Camara).filter(Camara.id == d.camara_id).first()
+        cam   = cam_map.get(d.camara_id)
         cname = cam.nombre if cam else f"Cámara {d.camara_id}"
         temp  = _temp_pasillo_o_producto(d) if (d.temperatura_pasillo or d.temperatura) else None
         check = (verificar_cumplimiento(sede.nombre, cname, temp) if temp is not None
