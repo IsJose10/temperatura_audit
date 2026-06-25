@@ -38,6 +38,7 @@ class VerificacionTermometroDetalle(Base):
     asignado_a = Column(String(150), nullable=True)
     serial_id = Column(String(100), nullable=True)
     marca_modelo = Column(String(150), nullable=True)
+    estado_fisico = Column(String(20), nullable=True)  # ponytail: CUMPLE / NO CUMPLE
     valor_objetivo = Column(Numeric(5, 2), nullable=False)  # e.g., -18 or 0
     lectura_verificado = Column(Numeric(5, 2), nullable=True)
     lectura_patron = Column(Numeric(5, 2), nullable=True)

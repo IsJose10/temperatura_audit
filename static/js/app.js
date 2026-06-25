@@ -34,7 +34,7 @@ function logout() {
 // API Helpers
 // ============================
 
-const API_TIMEOUT_MS = 30000; // 30 segundos timeout
+const API_TIMEOUT_MS = 60000; // 60 segundos timeout (fotos pueden ser pesadas)
 const API_MAX_RETRIES = 2;    // reintentos para GET
 
 function _createAbortController() {

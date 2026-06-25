@@ -179,13 +179,30 @@ def get_auditoria_activa(sede_id: int, db: Session = Depends(get_db),
 
 @router.post("/auditorias/upload-foto")
 def upload_foto(data: dict, current_user: Usuario = Depends(get_current_user)):
-    """Recibe imagen Base64 y retorna la URL base64 para guardarla directamente en BD."""
+    """Recibe imagen Base64, la guarda como archivo .jpg y retorna la URL relativa."""
     img = data.get("image", "")
     if not img:
         raise HTTPException(400, "No se proporcionó imagen")
-    if not img.startswith("data:"):
-        img = f"data:image/jpeg;base64,{img}"
-    return {"foto_url": img}
+
+    # ponytail: strip data URI header if present
+    raw = img
+    if raw.startswith("data:"):
+        # "data:image/jpeg;base64,/9j/4A..." → extract after comma
+        parts = raw.split(",", 1)
+        raw = parts[1] if len(parts) == 2 else raw
+
+    try:
+        img_bytes = base64.b64decode(raw)
+    except Exception:
+        raise HTTPException(400, "Imagen base64 inválida")
+
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}.jpg"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    with open(filepath, "wb") as f:
+        f.write(img_bytes)
+
+    return {"foto_url": f"/static/uploads/{filename}"}
 
 
 @router.post("/auditorias/{auditoria_id}/detalle", response_model=AuditoriaDetalleResponse)

@@ -118,6 +118,7 @@ def create_verificacion(
             asignado_a=det_data.asignado_a,
             serial_id=det_data.serial_id,
             marca_modelo=det_data.marca_modelo,
+            estado_fisico=det_data.estado_fisico,
             valor_objetivo=det_data.valor_objetivo,
             lectura_verificado=det_data.lectura_verificado,
             lectura_patron=det_data.lectura_patron,
@@ -219,6 +220,7 @@ def _build_response_obj(v: VerificacionTermometro, sede: Optional[Sede], creador
                 asignado_a=d.asignado_a,
                 serial_id=d.serial_id,
                 marca_modelo=d.marca_modelo,
+                estado_fisico=d.estado_fisico,
                 valor_objetivo=float(d.valor_objetivo),
                 lectura_verificado=float(d.lectura_verificado) if d.lectura_verificado is not None else None,
                 lectura_patron=float(d.lectura_patron) if d.lectura_patron is not None else None,
@@ -324,11 +326,12 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
     note_p = Paragraph('<u><b>Nota:</b></u> SI la desviación es mayor al rango definido del +/- 1°C. SI en la inspección física del equipo se evidencia deterioro y/o daño se deben tomar Acciones.', _style('NS', fontSize=7, fontName='Helvetica-Bold'))
     result_title_p = Paragraph('<b>RESULTADO<br/>MARCA CON (X)</b>', _style('RTP', fontSize=6.5, fontName='Helvetica-Bold', alignment=TA_CENTER, textColor=colors.white))
     
-    row_0 = [note_p, "", "", "", "", "", "", "", "", result_title_p, ""]
+    row_0 = [note_p, "", "", "", "", "", "", "", "", "", result_title_p, ""]
     row_1 = [
         Paragraph('TERMÓMETRO ASIGNADO A:', th_style),
         Paragraph('SERIAL ID', th_style),
         Paragraph('MARCA / MODELO', th_style),
+        Paragraph('ESTADO<br/>FÍSICO', th_style),
         Paragraph('VALOR<br/>OBJETIVO (C°)', th_style),
         Paragraph('LECTURA - IBC<br/>TERMÓMETRO<br/>VERIFICADO', th_style),
         Paragraph('LECTURA - PATRÓN', th_style),
@@ -354,12 +357,19 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         
     row_count = 2  # 2 filas para el header
     spans = [
-        ('SPAN', (0, 0), (8, 0)),
-        ('SPAN', (9, 0), (10, 0)),
+        ('SPAN', (0, 0), (9, 0)),
+        ('SPAN', (10, 0), (11, 0)),
     ]
     
     for key, items in termometros_agrupados.items():
         asignado, serial, marca = key
+        
+        # Estado físico del termómetro (mismo para ambas lecturas)
+        estado_fisico_val = ''
+        for x in items:
+            if hasattr(x, 'estado_fisico') and x.estado_fisico:
+                estado_fisico_val = x.estado_fisico
+                break
         
         # Debemos garantizar que haya lecturas para -18 y 0.
         item_18 = next((x for x in items if float(x.valor_objetivo) == -18.0), None)
@@ -376,6 +386,7 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
                 Paragraph(asignado, cell_left_style),
                 Paragraph(serial, cell_style),
                 Paragraph(marca, cell_style),
+                Paragraph(estado_fisico_val, cell_style),
                 Paragraph(f"{int(d.valor_objetivo)}", cell_style),
                 Paragraph(format_reading(d.lectura_verificado), cell_style),
                 Paragraph(format_reading(d.lectura_patron), cell_style),
@@ -390,7 +401,8 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         spans.append(('SPAN', (0, row_count), (0, row_count + 1)))
         spans.append(('SPAN', (1, row_count), (1, row_count + 1)))
         spans.append(('SPAN', (2, row_count), (2, row_count + 1)))
-        spans.append(('SPAN', (8, row_count), (8, row_count + 1)))
+        spans.append(('SPAN', (3, row_count), (3, row_count + 1)))
+        spans.append(('SPAN', (9, row_count), (9, row_count + 1)))
         row_count += 2
 
     # Rellenar con filas vacías para mantener consistencia visual (mínimo 12 filas de datos, 6 termómetros)
@@ -398,6 +410,7 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         # Fila para -18
         table_data.append([
             Paragraph('', cell_left_style), Paragraph('', cell_style), Paragraph('', cell_style),
+            Paragraph('', cell_style),
             Paragraph('-18', cell_style), Paragraph('', cell_style), Paragraph('', cell_style),
             Paragraph('', cell_style), Paragraph('±1', cell_style), Paragraph('', cell_style),
             Paragraph('', cell_style), Paragraph('', cell_style)
@@ -405,6 +418,7 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         # Fila para 0
         table_data.append([
             Paragraph('', cell_left_style), Paragraph('', cell_style), Paragraph('', cell_style),
+            Paragraph('', cell_style),
             Paragraph('0', cell_style), Paragraph('', cell_style), Paragraph('', cell_style),
             Paragraph('', cell_style), Paragraph('±1', cell_style), Paragraph('', cell_style),
             Paragraph('', cell_style), Paragraph('', cell_style)
@@ -412,11 +426,12 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         spans.append(('SPAN', (0, row_count), (0, row_count + 1)))
         spans.append(('SPAN', (1, row_count), (1, row_count + 1)))
         spans.append(('SPAN', (2, row_count), (2, row_count + 1)))
-        spans.append(('SPAN', (8, row_count), (8, row_count + 1)))
+        spans.append(('SPAN', (3, row_count), (3, row_count + 1)))
+        spans.append(('SPAN', (9, row_count), (9, row_count + 1)))
         row_count += 2
 
-    # ColWidths: total exactamente 10.2 inches, aligned with the other tables
-    widths = [1.6*inch, 0.8*inch, 1.2*inch, 0.6*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.6*inch, 1.6*inch, 0.7*inch, 0.7*inch]
+    # ColWidths: total exactamente 10.2 inches (12 columnas), aligned with the other tables
+    widths = [1.4*inch, 0.7*inch, 1.0*inch, 0.7*inch, 0.55*inch, 0.75*inch, 0.75*inch, 0.7*inch, 0.55*inch, 1.4*inch, 0.65*inch, 0.65*inch]
     
     t = Table(table_data, colWidths=widths, repeatRows=2)
     
@@ -430,14 +445,14 @@ def _generate_report_pdf(v: VerificacionTermometro, sede: Sede) -> io.BytesIO:
         ('RIGHTPADDING', (0, 0), (-1, -1), 3),
         
         # Row 0: Note spans and Result backgrounds
-        ('BACKGROUND', (9, 0), (10, 0), _GREEN),
+        ('BACKGROUND', (10, 0), (11, 0), _GREEN),
         
         # Row 1: Header backgrounds
-        ('BACKGROUND', (0, 1), (2, 1), _ORANGE),
-        ('BACKGROUND', (3, 1), (3, 1), _GREEN),
-        ('BACKGROUND', (4, 1), (7, 1), _ORANGE),
-        ('BACKGROUND', (8, 1), (8, 1), _GREEN),
-        ('BACKGROUND', (9, 1), (10, 1), _ORANGE),
+        ('BACKGROUND', (0, 1), (3, 1), _ORANGE),
+        ('BACKGROUND', (4, 1), (4, 1), _GREEN),
+        ('BACKGROUND', (5, 1), (8, 1), _ORANGE),
+        ('BACKGROUND', (9, 1), (9, 1), _GREEN),
+        ('BACKGROUND', (10, 1), (11, 1), _ORANGE),
     ]
     
     # Alternar fondos de filas de datos

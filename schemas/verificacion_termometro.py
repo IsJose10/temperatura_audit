@@ -7,6 +7,7 @@ class VerificacionTermometroDetalleCreate(BaseModel):
     asignado_a: Optional[str] = None
     serial_id: Optional[str] = None
     marca_modelo: Optional[str] = None
+    estado_fisico: Optional[str] = None  # ponytail: CUMPLE / NO CUMPLE
     valor_objetivo: float
     lectura_verificado: Optional[float] = None
     lectura_patron: Optional[float] = None
@@ -35,6 +36,7 @@ class VerificacionTermometroDetalleResponse(BaseModel):
     asignado_a: Optional[str] = None
     serial_id: Optional[str] = None
     marca_modelo: Optional[str] = None
+    estado_fisico: Optional[str] = None
     valor_objetivo: float
     lectura_verificado: Optional[float] = None
     lectura_patron: Optional[float] = None

@@ -205,6 +205,28 @@ function addThermometerCard() {
                 </div>
             </div>
 
+            <div>
+                <label class="block text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Estado Físico</label>
+                <div class="flex gap-2">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="estado_fisico_${thermCount}" value="CUMPLE" checked onchange="recalcRow(${thermCount})" class="sr-only peer">
+                        <div class="py-2 text-center text-xs font-bold border-2 rounded-xl transition-all
+                                    peer-checked:bg-ransa-600 peer-checked:text-white peer-checked:border-ransa-600
+                                    bg-white text-gray-500 border-gray-200 hover:border-ransa-300">
+                            ✅ CUMPLE
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="estado_fisico_${thermCount}" value="NO CUMPLE" onchange="recalcRow(${thermCount})" class="sr-only peer">
+                        <div class="py-2 text-center text-xs font-bold border-2 rounded-xl transition-all
+                                    peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600
+                                    bg-white text-gray-500 border-gray-200 hover:border-red-300">
+                            ❌ NO CUMPLE
+                        </div>
+                    </label>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3 pt-2">
                 <!-- Congelado Point -->
                 <div class="rounded-xl border border-blue-100 bg-blue-50/20 p-3 space-y-2">
@@ -299,11 +321,15 @@ function recalcRow(id) {
         document.getElementById(`corr_ref_${id}`).className = 'text-gray-600';
     }
 
-    // Show status if at least one is filled
+    // Estado físico
+    const estadoFisicoRadio = document.querySelector(`input[name="estado_fisico_${id}"]:checked`);
+    const estadoFisicoOk = estadoFisicoRadio ? estadoFisicoRadio.value === 'CUMPLE' : true;
+
+    // Show status if at least one is filled OR if estado fisico is NO CUMPLE
     const statusBox = document.getElementById(`status_${id}`);
-    if (anyCongFilled || anyRefFilled) {
+    if (anyCongFilled || anyRefFilled || !estadoFisicoOk) {
         statusBox.classList.remove('hidden');
-        const overallOk = congOk && refOk;
+        const overallOk = congOk && refOk && estadoFisicoOk;
         
         if (overallOk) {
             statusBox.style.background = '#f0fdf4';
@@ -312,7 +338,7 @@ function recalcRow(id) {
             statusBox.style.color = '#065f46';
             document.getElementById(`status_icon_${id}`).textContent = '✅';
             document.getElementById(`status_label_${id}`).textContent = 'Aprobado';
-            document.getElementById(`status_desc_${id}`).textContent = 'Desviación permitida (<= ±1°C)';
+            document.getElementById(`status_desc_${id}`).textContent = 'Cumple calibración y estado físico';
         } else {
             statusBox.style.background = '#fff1f2';
             statusBox.style.borderColor = '#f43f5e';
@@ -320,13 +346,22 @@ function recalcRow(id) {
             statusBox.style.color = '#9f1239';
             document.getElementById(`status_icon_${id}`).textContent = '⚠️';
             document.getElementById(`status_label_${id}`).textContent = 'Rechazado';
-            document.getElementById(`status_desc_${id}`).textContent = 'Supera límite de ±1°C';
+            
+            let desc = '';
+            if (!estadoFisicoOk && !(congOk && refOk)) {
+                desc = 'Desviación excede ±1°C y daño físico';
+            } else if (!estadoFisicoOk) {
+                desc = 'Deterioro / daño físico detectado';
+            } else {
+                desc = 'Supera límite de ±1°C';
+            }
+            document.getElementById(`status_desc_${id}`).textContent = desc;
             
             // Set correct action checkbox (uncheck no_aplica, check reajuste or maintenance)
             document.getElementById('accionNoAplica').checked = false;
             document.getElementById('accionReajuste').checked = true;
             
-            showToast('⚠️ Desviación excede ±1°C. Se requiere acción correctiva.', 'warning');
+            showToast('⚠️ Se requiere acción correctiva debido a desviación o daño físico.', 'warning');
         }
     } else {
         statusBox.classList.add('hidden');
@@ -356,6 +391,8 @@ async function guardarVerificacion() {
         const serial = document.getElementById(`serial_${id}`).value;
         const marca = document.getElementById(`marca_${id}`).value;
         const firma = document.getElementById(`firma_${id}`).value || currentAuditor;
+        const estadoFisicoRadio = document.querySelector(`input[name="estado_fisico_${id}"]:checked`);
+        const estadoFisico = estadoFisicoRadio ? estadoFisicoRadio.value : 'CUMPLE';
 
         // Congelado Point values
         const medCongVal = document.getElementById(`med_cong_${id}`).value;
@@ -376,6 +413,7 @@ async function guardarVerificacion() {
                     asignado_a: asignado || null,
                     serial_id: serial,
                     marca_modelo: marca || null,
+                    estado_fisico: estadoFisico,
                     valor_objetivo: -18.0,
                     lectura_verificado: parseFloat(medCongVal),
                     lectura_patron: parseFloat(patCongVal || -18.0),
@@ -391,6 +429,7 @@ async function guardarVerificacion() {
                     asignado_a: asignado || null,
                     serial_id: serial,
                     marca_modelo: marca || null,
+                    estado_fisico: estadoFisico,
                     valor_objetivo: 0.0,
                     lectura_verificado: parseFloat(medRefVal),
                     lectura_patron: parseFloat(patRefVal || 0.0),
