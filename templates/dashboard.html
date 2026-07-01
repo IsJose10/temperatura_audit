@@ -4,16 +4,16 @@
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
-    /* ponytail: dashboard-specific dark theme — scoped here, not global */
+    /* ponytail: dashboard-specific light theme */
     .dash-root {
-        background: linear-gradient(145deg, #0f1923 0%, #162231 50%, #0f1923 100%);
+        background: #ffffff;
         min-height: 100vh;
-        color: #e2e8f0;
+        color: #1e293b;
     }
 
     .dash-header {
-        background: linear-gradient(135deg, rgba(0,155,58,0.15), rgba(247,148,29,0.08));
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+        background: linear-gradient(135deg, #009B3A, #00762b);
+        border-bottom: 1px solid #e5e7eb;
         padding: 16px 24px;
         display: flex;
         align-items: center;
@@ -21,7 +21,7 @@
         position: sticky;
         top: 0;
         z-index: 50;
-        backdrop-filter: blur(16px);
+        color: #ffffff;
     }
 
     .dash-header-title {
@@ -36,8 +36,8 @@
     .dash-header-icon {
         width: 36px;
         height: 36px;
-        background: rgba(0,155,58,0.2);
-        border: 1px solid rgba(0,155,58,0.3);
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
         border-radius: 10px;
         display: flex;
         align-items: center;
@@ -49,9 +49,9 @@
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: #e2e8f0;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -60,8 +60,8 @@
         font-size: 16px;
     }
     .dash-refresh:hover {
-        background: rgba(0,155,58,0.2);
-        border-color: rgba(0,155,58,0.4);
+        background: rgba(255,255,255,0.35);
+        border-color: rgba(255,255,255,0.5);
     }
 
     .dash-content {
@@ -78,8 +78,8 @@
     }
 
     .kpi-card {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 18px 16px;
         position: relative;
@@ -87,9 +87,10 @@
         transition: all 0.3s ease;
     }
     .kpi-card:hover {
-        background: rgba(255,255,255,0.07);
-        border-color: rgba(255,255,255,0.15);
+        background: #f1f5f9;
+        border-color: #cbd5e1;
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
 
     .kpi-card .kpi-icon {
@@ -115,47 +116,48 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.8px;
-        color: #94a3b8;
+        color: #64748b;
     }
 
     .kpi-card .kpi-sub {
         font-size: 10px;
-        color: #64748b;
+        color: #94a3b8;
         margin-top: 4px;
     }
 
     /* KPI color variants */
-    .kpi-green .kpi-icon { background: rgba(0,155,58,0.2); color: #34d399; }
-    .kpi-green .kpi-value { color: #34d399; }
+    .kpi-green .kpi-icon { background: rgba(0,155,58,0.12); color: #009B3A; }
+    .kpi-green .kpi-value { color: #009B3A; }
 
-    .kpi-orange .kpi-icon { background: rgba(247,148,29,0.2); color: #f9b54d; }
-    .kpi-orange .kpi-value { color: #f9b54d; }
+    .kpi-orange .kpi-icon { background: rgba(247,148,29,0.12); color: #e07f0e; }
+    .kpi-orange .kpi-value { color: #e07f0e; }
 
-    .kpi-blue .kpi-icon { background: rgba(59,130,246,0.2); color: #60a5fa; }
-    .kpi-blue .kpi-value { color: #60a5fa; }
+    .kpi-blue .kpi-icon { background: rgba(59,130,246,0.12); color: #3b82f6; }
+    .kpi-blue .kpi-value { color: #3b82f6; }
 
-    .kpi-emerald .kpi-icon { background: rgba(16,185,129,0.2); color: #6ee7b7; }
-    .kpi-emerald .kpi-value { color: #6ee7b7; }
+    .kpi-emerald .kpi-icon { background: rgba(16,185,129,0.12); color: #059669; }
+    .kpi-emerald .kpi-value { color: #059669; }
 
-    .kpi-amber .kpi-icon { background: rgba(245,158,11,0.2); color: #fbbf24; }
-    .kpi-amber .kpi-value { color: #fbbf24; }
+    .kpi-amber .kpi-icon { background: rgba(245,158,11,0.12); color: #d97706; }
+    .kpi-amber .kpi-value { color: #d97706; }
 
-    .kpi-cyan .kpi-icon { background: rgba(6,182,212,0.2); color: #22d3ee; }
-    .kpi-cyan .kpi-value { color: #22d3ee; }
+    .kpi-cyan .kpi-icon { background: rgba(6,182,212,0.12); color: #0891b2; }
+    .kpi-cyan .kpi-value { color: #0891b2; }
 
     /* ---- Chart Panels ---- */
     .panel {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.07);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 20px;
         margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .panel-title {
         font-size: 13px;
         font-weight: 700;
-        color: #cbd5e1;
+        color: #334155;
         margin-bottom: 16px;
         display: flex;
         align-items: center;
@@ -183,8 +185,8 @@
     }
 
     .rango-table thead th {
-        background: rgba(255,255,255,0.05);
-        color: #94a3b8;
+        background: #f1f5f9;
+        color: #64748b;
         font-size: 10px;
         font-weight: 700;
         text-transform: uppercase;
@@ -198,12 +200,12 @@
 
     .rango-table tbody td {
         padding: 10px 14px;
-        border-bottom: 1px solid rgba(255,255,255,0.04);
-        color: #cbd5e1;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
     }
 
     .rango-table tbody tr:hover td {
-        background: rgba(255,255,255,0.03);
+        background: #f8fafc;
     }
 
     .temp-cold { color: #60a5fa; font-weight: 700; }
@@ -212,10 +214,10 @@
 
     /* ---- Sede Filter ---- */
     .sede-select {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.12);
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 8px;
-        color: #e2e8f0;
+        color: #334155;
         padding: 6px 12px;
         font-size: 12px;
         font-weight: 500;
@@ -223,12 +225,12 @@
         cursor: pointer;
     }
     .sede-select:focus {
-        border-color: rgba(0,155,58,0.5);
+        border-color: #009B3A;
         box-shadow: 0 0 0 2px rgba(0,155,58,0.15);
     }
     .sede-select option {
-        background: #1e293b;
-        color: #e2e8f0;
+        background: #ffffff;
+        color: #334155;
     }
 
     /* ---- Completitud Gauge ---- */
@@ -256,12 +258,12 @@
     .gauge-text .gauge-pct {
         font-size: 32px;
         font-weight: 800;
-        color: #34d399;
+        color: #009B3A;
     }
 
     .gauge-text .gauge-label {
         font-size: 9px;
-        color: #94a3b8;
+        color: #64748b;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 600;
@@ -285,9 +287,25 @@
     .dash-loading {
         animation: pulse-dim 1.5s ease-in-out infinite;
         text-align: center;
-        color: #64748b;
+        color: #94a3b8;
         padding: 40px 0;
         font-size: 13px;
+    }
+
+    /* ---- Sede prompt (shown when no sede selected) ---- */
+    .sede-prompt {
+        text-align: center;
+        color: #94a3b8;
+        padding: 32px 16px;
+        font-size: 13px;
+    }
+    .sede-prompt .sede-prompt-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+    .sede-prompt .sede-prompt-text {
+        font-weight: 500;
+        color: #64748b;
     }
 </style>
 {% endblock %}
@@ -391,11 +409,14 @@
                     <span class="panel-icon">❄️</span> Rango Temp por Cámara
                 </div>
                 <select id="sedeFilterRango" onchange="loadRangoTemp()" class="sede-select">
-                    <option value="">Todas las sedes</option>
+                    <option value="">Seleccione una sede</option>
                 </select>
             </div>
             <div id="tableRangoTemp">
-                <div class="dash-loading">Cargando...</div>
+                <div class="sede-prompt">
+                    <div class="sede-prompt-icon">🏢</div>
+                    <div class="sede-prompt-text">Seleccione una sede para ver las cámaras</div>
+                </div>
             </div>
         </div>
 
@@ -433,16 +454,16 @@
 
 {% block extra_scripts %}
 <script>
-    // ponytail: Chart.js defaults for dark theme — set once
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+    // ponytail: Chart.js defaults for light theme — set once
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.borderColor = '#e2e8f0';
     Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
 
     const RANSA_GREEN = '#009B3A';
-    const RANSA_GREEN_LIGHT = '#34d399';
+    const RANSA_GREEN_LIGHT = '#059669';
     const RANSA_ORANGE = '#F7941D';
-    const RANSA_CYAN = '#22d3ee';
-    const RANSA_BLUE = '#60a5fa';
+    const RANSA_CYAN = '#0891b2';
+    const RANSA_BLUE = '#3b82f6';
 
     let chartTendencia, chartSede, chartCompletitud, chartTempPromedio;
     let sedesLoaded = false;
@@ -467,7 +488,7 @@
             buildSedeChart(stats.auditorias_por_sede);
             buildCompletitudChart(stats.auditorias_completadas, stats.total_auditorias);
             buildTempPromedioChart(stats.temperatura_promedio_por_mes);
-            buildMinMaxTable('tableRangoTemp', stats.rango_camaras);
+            // Camera table stays hidden until user selects a sede
 
             if (!sedesLoaded) {
                 await loadSedesFilter();
@@ -495,9 +516,14 @@
 
     async function loadRangoTemp() {
         const sedeId = document.getElementById('sedeFilterRango').value;
-        const url = sedeId ? `/api/dashboard/stats?sede_id=${sedeId}` : '/api/dashboard/stats';
+        const container = document.getElementById('tableRangoTemp');
+        if (!sedeId) {
+            container.innerHTML = '<div class="sede-prompt"><div class="sede-prompt-icon">🏢</div><div class="sede-prompt-text">Seleccione una sede para ver las cámaras</div></div>';
+            return;
+        }
+        container.innerHTML = '<div class="dash-loading">Cargando...</div>';
         try {
-            const stats = await apiGet(url);
+            const stats = await apiGet(`/api/dashboard/stats?sede_id=${sedeId}`);
             buildMinMaxTable('tableRangoTemp', stats.rango_camaras);
         } catch (e) {
             showToast('Error al filtrar: ' + e.message, 'error');
@@ -554,7 +580,7 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
                     x: { grid: { display: false } }
                 }
             }
@@ -589,7 +615,7 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
                     x: { grid: { display: false } }
                 }
             }
@@ -605,7 +631,7 @@
 
         // ponytail: color the gauge value dynamically
         const gaugeEl = document.getElementById('gaugePct');
-        gaugeEl.style.color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+        gaugeEl.style.color = pct >= 80 ? '#009B3A' : pct >= 50 ? '#d97706' : '#dc2626';
 
         chartCompletitud = new Chart(ctx, {
             type: 'doughnut',
@@ -613,7 +639,7 @@
                 labels: ['Completadas', 'Pendientes'],
                 datasets: [{
                     data: [completadas, total - completadas],
-                    backgroundColor: [RANSA_GREEN, 'rgba(255,255,255,0.06)'],
+                    backgroundColor: [RANSA_GREEN, '#e2e8f0'],
                     borderWidth: 0,
                     cutout: '78%'
                 }]
@@ -661,7 +687,7 @@
                     }
                 },
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.04)' } },
+                    y: { grid: { color: '#f1f5f9' } },
                     x: { grid: { display: false } }
                 }
             }
