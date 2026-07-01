@@ -1,95 +1,407 @@
 {% extends "base.html" %}
 {% block title %}RANSA - Dashboard{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+    /* ponytail: dashboard-specific dark theme — scoped here, not global */
+    .dash-root {
+        background: linear-gradient(145deg, #0f1923 0%, #162231 50%, #0f1923 100%);
+        min-height: 100vh;
+        color: #e2e8f0;
+    }
+
+    .dash-header {
+        background: linear-gradient(135deg, rgba(0,155,58,0.15), rgba(247,148,29,0.08));
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(16px);
+    }
+
+    .dash-header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+
+    .dash-header-icon {
+        width: 36px;
+        height: 36px;
+        background: rgba(0,155,58,0.2);
+        border: 1px solid rgba(0,155,58,0.3);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .dash-refresh {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+    }
+    .dash-refresh:hover {
+        background: rgba(0,155,58,0.2);
+        border-color: rgba(0,155,58,0.4);
+    }
+
+    .dash-content {
+        padding: 20px;
+        padding-bottom: 100px;
+    }
+
+    /* ---- KPI Cards ---- */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .kpi-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 18px 16px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .kpi-card:hover {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.15);
+        transform: translateY(-2px);
+    }
+
+    .kpi-card .kpi-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        margin-bottom: 12px;
+    }
+
+    .kpi-card .kpi-value {
+        font-size: 28px;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .kpi-card .kpi-label {
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #94a3b8;
+    }
+
+    .kpi-card .kpi-sub {
+        font-size: 10px;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    /* KPI color variants */
+    .kpi-green .kpi-icon { background: rgba(0,155,58,0.2); color: #34d399; }
+    .kpi-green .kpi-value { color: #34d399; }
+
+    .kpi-orange .kpi-icon { background: rgba(247,148,29,0.2); color: #f9b54d; }
+    .kpi-orange .kpi-value { color: #f9b54d; }
+
+    .kpi-blue .kpi-icon { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    .kpi-blue .kpi-value { color: #60a5fa; }
+
+    .kpi-emerald .kpi-icon { background: rgba(16,185,129,0.2); color: #6ee7b7; }
+    .kpi-emerald .kpi-value { color: #6ee7b7; }
+
+    .kpi-amber .kpi-icon { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .kpi-amber .kpi-value { color: #fbbf24; }
+
+    .kpi-cyan .kpi-icon { background: rgba(6,182,212,0.2); color: #22d3ee; }
+    .kpi-cyan .kpi-value { color: #22d3ee; }
+
+    /* ---- Chart Panels ---- */
+    .panel {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+    }
+
+    .panel-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #cbd5e1;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .panel-title .panel-icon {
+        font-size: 14px;
+    }
+
+    /* ---- Chart Grid (side by side on desktop) ---- */
+    .charts-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    /* ---- Rango Temp Table ---- */
+    .rango-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+    }
+
+    .rango-table thead th {
+        background: rgba(255,255,255,0.05);
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        padding: 10px 14px;
+        text-align: left;
+    }
+
+    .rango-table thead th:first-child { border-radius: 8px 0 0 0; }
+    .rango-table thead th:last-child { border-radius: 0 8px 0 0; }
+
+    .rango-table tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        color: #cbd5e1;
+    }
+
+    .rango-table tbody tr:hover td {
+        background: rgba(255,255,255,0.03);
+    }
+
+    .temp-cold { color: #60a5fa; font-weight: 700; }
+    .temp-hot { color: #f87171; font-weight: 700; }
+    .temp-ok { color: #34d399; }
+
+    /* ---- Sede Filter ---- */
+    .sede-select {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 8px;
+        color: #e2e8f0;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        outline: none;
+        cursor: pointer;
+    }
+    .sede-select:focus {
+        border-color: rgba(0,155,58,0.5);
+        box-shadow: 0 0 0 2px rgba(0,155,58,0.15);
+    }
+    .sede-select option {
+        background: #1e293b;
+        color: #e2e8f0;
+    }
+
+    /* ---- Completitud Gauge ---- */
+    .gauge-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 0;
+    }
+
+    .gauge-wrap {
+        position: relative;
+        width: 140px;
+        height: 140px;
+    }
+
+    .gauge-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .gauge-text .gauge-pct {
+        font-size: 32px;
+        font-weight: 800;
+        color: #34d399;
+    }
+
+    .gauge-text .gauge-label {
+        font-size: 9px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    /* ---- Responsive ---- */
+    @media (min-width: 768px) {
+        .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+        .charts-row { grid-template-columns: 3fr 2fr; }
+    }
+
+    @media (min-width: 1024px) {
+        .kpi-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    /* ---- Loading pulse ---- */
+    @keyframes pulse-dim {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+    }
+    .dash-loading {
+        animation: pulse-dim 1.5s ease-in-out infinite;
+        text-align: center;
+        color: #64748b;
+        padding: 40px 0;
+        font-size: 13px;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="app-container">
+<div class="dash-root">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-ransa-900 via-ransa-800 to-ransa-900 text-white px-5 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg shadow-ransa-900/20">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-lg">📊</div>
-            <span class="font-bold text-base tracking-wide">DASHBOARD</span>
+    <div class="dash-header">
+        <div class="dash-header-title">
+            <div class="dash-header-icon">📊</div>
+            <span>DASHBOARD</span>
         </div>
-        <div class="flex gap-2">
-            <button onclick="loadDashboard()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200" title="Refrescar">🔄</button>
-        </div>
+        <button onclick="loadDashboard()" class="dash-refresh" title="Refrescar">🔄</button>
     </div>
 
-    <!-- Content -->
-    <div class="px-5 py-5 pb-24 space-y-5">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="dashboardStats">
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
-                <div class="text-2xl mb-2">📋</div>
-                <div class="text-3xl font-extrabold text-ransa-700" id="dTotalAuditorias">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Total Auditorías</div>
+    <div class="dash-content">
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-green">
+                <div class="kpi-icon">📋</div>
+                <div class="kpi-value" id="dTotalAuditorias">0</div>
+                <div class="kpi-label">Total Auditorías</div>
             </div>
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
-                <div class="text-2xl mb-2">📅</div>
-                <div class="text-3xl font-extrabold text-ransa-700" id="dAuditoriasHoy">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Hoy</div>
+            <div class="kpi-card kpi-orange">
+                <div class="kpi-icon">📅</div>
+                <div class="kpi-value" id="dAuditoriasHoy">0</div>
+                <div class="kpi-label">Hoy</div>
             </div>
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all duration-300">
-                <div class="text-2xl mb-2">✅</div>
-                <div class="text-3xl font-extrabold text-emerald-600" id="dCompletadas">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Completadas</div>
+            <div class="kpi-card kpi-emerald">
+                <div class="kpi-icon">✅</div>
+                <div class="kpi-value" id="dCompletadas">0</div>
+                <div class="kpi-label">Completadas</div>
             </div>
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-300">
-                <div class="text-2xl mb-2">⏳</div>
-                <div class="text-3xl font-extrabold text-amber-600" id="dEnProgreso">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">En Progreso</div>
+            <div class="kpi-card kpi-amber">
+                <div class="kpi-icon">⏳</div>
+                <div class="kpi-value" id="dEnProgreso">0</div>
+                <div class="kpi-label">En Progreso</div>
             </div>
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
-                <div class="text-2xl mb-2">🏢</div>
-                <div class="text-3xl font-extrabold text-ransa-700" id="dTotalSedes">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Sedes</div>
+            <div class="kpi-card kpi-blue">
+                <div class="kpi-icon">🏢</div>
+                <div class="kpi-value" id="dTotalSedes">0</div>
+                <div class="kpi-label">Sedes</div>
             </div>
-            <div class="bg-white rounded-2xl p-5 text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-ransa-200 transition-all duration-300">
-                <div class="text-2xl mb-2">🏪</div>
-                <div class="text-3xl font-extrabold text-ransa-700" id="dTotalCamaras">0</div>
-                <div class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Cámaras</div>
-            </div>
-        </div>
-
-        <!-- Chart: Auditorias por Sede -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">📊 Auditorías por Sede</h3>
-            <div id="chartSede">
-                <div class="text-center py-5 text-gray-400 text-sm">Cargando...</div>
+            <div class="kpi-card kpi-cyan">
+                <div class="kpi-icon">🏪</div>
+                <div class="kpi-value" id="dTotalCamaras">0</div>
+                <div class="kpi-label">Cámaras</div>
             </div>
         </div>
 
-        <!-- Chart: Auditorias por Mes -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">📈 Auditorías por Mes</h3>
-            <div id="chartMes">
-                <div class="text-center py-5 text-gray-400 text-sm">Cargando...</div>
+        <!-- Row: Line chart full width — Tendencia de Auditorías -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="panel-icon">📈</span> Tendencia de Auditorías (Últimos 6 meses)
+            </div>
+            <div style="position:relative; height:220px;">
+                <canvas id="chartTendencia"></canvas>
             </div>
         </div>
 
-        <!-- Chart: Temp Promedio por Mes -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">🌡️ Temp Promedio por Mes</h3>
-            <div id="chartTempPromedio">
-                <div class="text-center py-5 text-gray-400 text-sm">Cargando...</div>
+        <!-- Row: Bar chart + Doughnut -->
+        <div class="charts-row">
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="panel-icon">📊</span> Auditorías por Sede
+                </div>
+                <div style="position:relative; height:240px;">
+                    <canvas id="chartSede"></canvas>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-title">
+                    <span class="panel-icon">🎯</span> Completitud
+                </div>
+                <div class="gauge-container">
+                    <div class="gauge-wrap">
+                        <canvas id="chartCompletitud"></canvas>
+                        <div class="gauge-text">
+                            <div class="gauge-pct" id="gaugePct">0%</div>
+                            <div class="gauge-label">Completadas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Temp Promedio -->
+        <div class="panel">
+            <div class="panel-title">
+                <span class="panel-icon">🌡️</span> Temperatura Promedio por Mes
+            </div>
+            <div style="position:relative; height:220px;">
+                <canvas id="chartTempPromedio"></canvas>
             </div>
         </div>
 
         <!-- Rango Temperaturas -->
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">❄️ Rango Temp por Cámara</h3>
-                <select id="sedeFilterRango" onchange="loadRangoTemp()" class="text-xs border border-gray-200 rounded-lg px-3 py-1.5 bg-gray-50 text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-ransa-500 focus:border-transparent">
+        <div class="panel">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <div class="panel-title" style="margin-bottom:0;">
+                    <span class="panel-icon">❄️</span> Rango Temp por Cámara
+                </div>
+                <select id="sedeFilterRango" onchange="loadRangoTemp()" class="sede-select">
                     <option value="">Todas las sedes</option>
                 </select>
             </div>
-            <div id="tableRangoTemp" class="overflow-x-auto rounded-xl">
-                <div class="text-center py-5 text-gray-400 text-sm">Cargando...</div>
+            <div id="tableRangoTemp">
+                <div class="dash-loading">Cargando...</div>
             </div>
         </div>
 
         <!-- Logo footer -->
-        <div class="text-center py-6">
-            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" class="h-10 mx-auto opacity-30">
+        <div style="text-align:center; padding:24px 0;">
+            <img src="/static/img/ransa_logo_wide.png" alt="RANSA" style="height:36px; opacity:0.2;">
         </div>
     </div>
 
@@ -121,12 +433,24 @@
 
 {% block extra_scripts %}
 <script>
+    // ponytail: Chart.js defaults for dark theme — set once
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+    Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+
+    const RANSA_GREEN = '#009B3A';
+    const RANSA_GREEN_LIGHT = '#34d399';
+    const RANSA_ORANGE = '#F7941D';
+    const RANSA_CYAN = '#22d3ee';
+    const RANSA_BLUE = '#60a5fa';
+
+    let chartTendencia, chartSede, chartCompletitud, chartTempPromedio;
+    let sedesLoaded = false;
+
     document.addEventListener('DOMContentLoaded', () => {
         requireAuth();
         loadDashboard();
     });
-
-    let sedesLoaded = false;
 
     async function loadDashboard() {
         try {
@@ -139,17 +463,16 @@
             animateCounter('dTotalSedes', stats.total_sedes);
             animateCounter('dTotalCamaras', stats.total_camaras);
 
-            buildBarChart('chartSede', stats.auditorias_por_sede, 'sede', 'total');
-            buildBarChart('chartMes', stats.auditorias_por_mes, 'mes', 'total');
-            buildBarChartTemp('chartTempPromedio', stats.temperatura_promedio_por_mes, 'mes', 'promedio');
+            buildTendenciaChart(stats.auditorias_por_mes);
+            buildSedeChart(stats.auditorias_por_sede);
+            buildCompletitudChart(stats.auditorias_completadas, stats.total_auditorias);
+            buildTempPromedioChart(stats.temperatura_promedio_por_mes);
             buildMinMaxTable('tableRangoTemp', stats.rango_camaras);
 
-            // Load sedes dropdown once
             if (!sedesLoaded) {
                 await loadSedesFilter();
                 sedesLoaded = true;
             }
-
         } catch (e) {
             showToast('Error al cargar dashboard: ' + e.message, 'error');
         }
@@ -184,7 +507,7 @@
     function animateCounter(elementId, targetValue) {
         const el = document.getElementById(elementId);
         let current = 0;
-        const step = Math.max(1, Math.ceil(targetValue / 20));
+        const step = Math.max(1, Math.ceil(targetValue / 25));
         const interval = setInterval(() => {
             current += step;
             if (current >= targetValue) {
@@ -192,93 +515,185 @@
                 clearInterval(interval);
             }
             el.textContent = current;
-        }, 40);
+        }, 30);
     }
 
-    function buildBarChart(containerId, data, labelKey, valueKey) {
-        const container = document.getElementById(containerId);
+    // ---- Chart Builders ----
 
+    function buildTendenciaChart(data) {
+        if (chartTendencia) chartTendencia.destroy();
+        const ctx = document.getElementById('chartTendencia');
         if (!data || data.length === 0) {
-            container.innerHTML = '<div class="text-center py-5 text-gray-400 text-sm">Sin datos disponibles</div>';
+            ctx.parentElement.innerHTML = '<div class="dash-loading">Sin datos disponibles</div>';
             return;
         }
 
-        const maxVal = Math.max(...data.map(d => d[valueKey]));
+        const labels = data.map(d => `${d.mes} ${d.anio || ''}`);
+        const values = data.map(d => d.total);
 
-        container.innerHTML = data.map(item => {
-            const pct = maxVal > 0 ? (item[valueKey] / maxVal * 100) : 0;
-            return `
-            <div class="flex items-center gap-3 mb-2.5 animate-in">
-                <div class="w-20 text-right text-xs font-semibold text-gray-500 shrink-0 truncate">${item[labelKey]}${item.anio ? ' ' + item.anio : ''}</div>
-                <div class="flex-1 h-7 bg-gray-100 rounded-lg overflow-hidden">
-                    <div class="h-full bg-gradient-to-r from-ransa-700 to-ransa-500 rounded-lg flex items-center justify-end pr-2 text-[10px] font-bold text-white transition-all duration-700" style="width: ${pct}%; min-width: 28px">${item[valueKey]}</div>
-                </div>
-            </div>
-        `;
-        }).join('');
+        chartTendencia = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Auditorías',
+                    data: values,
+                    borderColor: RANSA_GREEN,
+                    backgroundColor: 'rgba(0,155,58,0.1)',
+                    borderWidth: 2.5,
+                    pointBackgroundColor: RANSA_GREEN_LIGHT,
+                    pointBorderColor: RANSA_GREEN,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
-    function buildBarChartTemp(containerId, data, labelKey, valueKey) {
-        const container = document.getElementById(containerId);
-
+    function buildSedeChart(data) {
+        if (chartSede) chartSede.destroy();
+        const ctx = document.getElementById('chartSede');
         if (!data || data.length === 0) {
-            container.innerHTML = '<div class="text-center py-5 text-gray-400 text-sm">Sin datos disponibles</div>';
+            ctx.parentElement.innerHTML = '<div class="dash-loading">Sin datos disponibles</div>';
             return;
         }
 
-        let maxVal = Math.max(...data.map(d => Math.abs(d[valueKey])));
-        maxVal = maxVal < 5 ? 5 : maxVal * 1.2;
+        const barColors = [RANSA_GREEN, RANSA_ORANGE, RANSA_CYAN, RANSA_BLUE, '#a78bfa', '#f472b6', '#34d399', '#fbbf24'];
 
-        container.innerHTML = data.map(item => {
-            const val = item[valueKey];
-            const pct = Math.abs(val) / maxVal * 100;
-            const colorClass = val < 0 ? 'from-blue-600 to-blue-400' : 'from-ransa-700 to-ransa-500';
+        chartSede = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.sede),
+                datasets: [{
+                    label: 'Auditorías',
+                    data: data.map(d => d.total),
+                    backgroundColor: data.map((_, i) => barColors[i % barColors.length]),
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 36
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
 
-            return `
-            <div class="flex items-center gap-3 mb-2.5 animate-in">
-                <div class="w-16 text-right text-xs font-semibold text-gray-500 shrink-0">${item[labelKey]} ${item.anio ? item.anio : ''}</div>
-                <div class="flex-1 h-7 bg-gray-100 rounded-lg overflow-hidden">
-                    <div class="h-full bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-end pr-2 text-[10px] font-bold text-white" style="width: ${pct}%; min-width: 35px">${val} °C</div>
-                </div>
-            </div>
-        `;
-        }).join('');
+    function buildCompletitudChart(completadas, total) {
+        if (chartCompletitud) chartCompletitud.destroy();
+        const ctx = document.getElementById('chartCompletitud');
+
+        const pct = total > 0 ? Math.round((completadas / total) * 100) : 0;
+        document.getElementById('gaugePct').textContent = pct + '%';
+
+        // ponytail: color the gauge value dynamically
+        const gaugeEl = document.getElementById('gaugePct');
+        gaugeEl.style.color = pct >= 80 ? '#34d399' : pct >= 50 ? '#fbbf24' : '#f87171';
+
+        chartCompletitud = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completadas', 'Pendientes'],
+                datasets: [{
+                    data: [completadas, total - completadas],
+                    backgroundColor: [RANSA_GREEN, 'rgba(255,255,255,0.06)'],
+                    borderWidth: 0,
+                    cutout: '78%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: { legend: { display: false }, tooltip: { enabled: true } }
+            }
+        });
+    }
+
+    function buildTempPromedioChart(data) {
+        if (chartTempPromedio) chartTempPromedio.destroy();
+        const ctx = document.getElementById('chartTempPromedio');
+        if (!data || data.length === 0) {
+            ctx.parentElement.innerHTML = '<div class="dash-loading">Sin datos disponibles</div>';
+            return;
+        }
+
+        const labels = data.map(d => `${d.mes} ${d.anio || ''}`);
+        const values = data.map(d => d.promedio != null ? parseFloat(d.promedio.toFixed(1)) : null);
+
+        chartTempPromedio = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Temp Promedio (°C)',
+                    data: values,
+                    backgroundColor: values.map(v => v != null && v < 0 ? 'rgba(96,165,250,0.7)' : 'rgba(0,155,58,0.6)'),
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.parsed.y} °C`
+                        }
+                    }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
     function buildMinMaxTable(containerId, data) {
         const container = document.getElementById(containerId);
-
         if (!data || data.length === 0) {
-            container.innerHTML = '<div class="text-center py-5 text-gray-400 text-sm">Sin datos disponibles</div>';
+            container.innerHTML = '<div class="dash-loading">Sin datos disponibles</div>';
             return;
         }
 
-        let html = `
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wider">Cámara</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wider">Mín</th>
-                    <th class="px-4 py-3 text-left font-semibold text-gray-600 text-xs uppercase tracking-wider">Máx</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-    `;
+        let html = `<table class="rango-table">
+            <thead><tr>
+                <th>Cámara</th>
+                <th>Mín</th>
+                <th>Máx</th>
+            </tr></thead><tbody>`;
 
         data.forEach(item => {
-            let minClass = item.min < 0 ? 'text-blue-600 font-bold' : 'text-gray-700';
-            let maxClass = item.max > 8 ? 'text-red-600 font-bold' : 'text-gray-700';
+            const minCls = item.min != null && item.min < 0 ? 'temp-cold' : 'temp-ok';
+            const maxCls = item.max != null && item.max > 8 ? 'temp-hot' : 'temp-ok';
 
-            html += `
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-4 py-3 font-semibold text-gray-800">${item.camara}</td>
-                <td class="px-4 py-3 ${minClass}">${item.min !== null ? item.min + ' °C' : '-'}</td>
-                <td class="px-4 py-3 ${maxClass}">${item.max !== null ? item.max + ' °C' : '-'}</td>
-            </tr>
-        `;
+            html += `<tr>
+                <td style="font-weight:600;">${item.camara}</td>
+                <td class="${minCls}">${item.min !== null ? item.min + ' °C' : '—'}</td>
+                <td class="${maxCls}">${item.max !== null ? item.max + ' °C' : '—'}</td>
+            </tr>`;
         });
 
-        html += `</tbody></table>`;
+        html += '</tbody></table>';
         container.innerHTML = html;
     }
 </script>
