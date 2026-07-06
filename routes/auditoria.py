@@ -91,6 +91,11 @@ def get_camaras_by_sede(sede_id: int, db: Session = Depends(get_db),
     _assert_regional(current_user, sede)
     camaras = db.query(Camara).filter(Camara.sede_id == sede_id,
                                       Camara.activo == True).all()
+    # ponytail: sort numerics first (as int), then alpha
+    def _sort_key(c):
+        try: return (0, int(c.nombre), '')
+        except ValueError: return (1, 0, c.nombre)
+    camaras.sort(key=_sort_key)
     return [CamaraResponse.model_validate(c) for c in camaras]
 
 
