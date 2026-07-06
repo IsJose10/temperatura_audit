@@ -114,6 +114,7 @@ def seed_data():
                 ("3", "Congelada"),
                 ("5", "Congelada"),
                 ("7", "Congelada"),
+                ("8", "Refrigerada"),
                 ("10", "Congelada"),
                 ("11", "Congelada"),
                 ("15", "Congelada"),

@@ -476,15 +476,23 @@ async function guardarAuditoria() {
 
     try {
         showLoading(true);
-        // Subir fotos si fueron capturadas
+        // Subir fotos si fueron capturadas (si ya es URL del servidor, no re-subir)
         let fotoUrl = null, fotoUrl2 = null;
         if (capturedPhotos[1]) {
-            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[1] });
-            fotoUrl = r.foto_url;
+            if (capturedPhotos[1].startsWith('/')) {
+                fotoUrl = capturedPhotos[1]; // ponytail: already a server URL, skip upload
+            } else {
+                const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[1] });
+                fotoUrl = r.foto_url;
+            }
         }
         if (capturedPhotos[2]) {
-            const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[2] });
-            fotoUrl2 = r.foto_url;
+            if (capturedPhotos[2].startsWith('/')) {
+                fotoUrl2 = capturedPhotos[2]; // ponytail: already a server URL, skip upload
+            } else {
+                const r = await apiPost('/api/auditorias/upload-foto', { image: capturedPhotos[2] });
+                fotoUrl2 = r.foto_url;
+            }
         }
 
         const detalle = await apiPost(`/api/auditorias/${currentAudit.id}/detalle`, {
